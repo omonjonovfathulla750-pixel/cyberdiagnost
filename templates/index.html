@@ -376,33 +376,84 @@
       </div>
 
       <!-- Dublikatlar qidiruvchi -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
-          <div>
-            <div class="flex items-center space-x-2 mb-1">
-              <div class="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center">
-                <i class="fa-solid fa-clone"></i>
-              </div>
-              <h2 class="text-base font-semibold text-slate-200">Dublikat (Nusxa) Fayllarni Qidirish</h2>
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div>
+          <div class="flex items-center space-x-2 mb-1">
+            <div class="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center">
+              <i class="fa-solid fa-clone"></i>
             </div>
-            <p class="text-xs text-slate-400">Downloads papkasidagi mutlaqo bir xil kontentga ega nusxa fayllarni topadi.</p>
+            <h2 class="text-base font-semibold text-slate-200">Dublikat (Bir xil nusxa) Fayllarni Qidirish</h2>
+          </div>
+          <p class="text-xs text-slate-400">
+            Siz ochgan qurilmaning (telefon yoki kompyuter) ichki xotirasidagi yoki kompyuteringiz papkalaridagi haqiqiy bir xil fayllarni topadi.
+          </p>
+        </div>
+
+        <!-- 2 xil manba tanlash (Telefon ichki xotirasi / Kompyuter papkasi) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- 1. Shu qurilmaning ichki xotirasi (Telefon / Planshet / Galereya) -->
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-indigo-500/30 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center space-x-2 mb-2">
+                <i class="fa-solid fa-mobile-screen text-indigo-400 text-sm"></i>
+                <h3 class="text-xs font-semibold text-slate-200">1. Ushbu Qurilmaning O'z Ichki Xotirasi</h3>
+              </div>
+              <p class="text-[11px] text-slate-400 mb-4 leading-relaxed">
+                Telefoningiz yoki ushbu qurilmaning o'zidagi papka yoki fayllarni tanlang. Brauzer to'g'ridan-to'g'ri <b>shu qurilmangizning ichki xotirasidagi</b> dublikatlarni aniqlaydi.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <input type="file" id="client-file-picker" webkitdirectory directory multiple class="hidden" onchange="handleClientFilesSelected(event)">
+              <input type="file" id="client-files-picker" multiple class="hidden" onchange="handleClientFilesSelected(event)">
+              <button onclick="document.getElementById('client-file-picker').click()" class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center space-x-1.5 shadow-md shadow-indigo-600/20">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Papka Tanlash</span>
+              </button>
+              <button onclick="document.getElementById('client-files-picker').click()" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center justify-center space-x-1.5 border border-slate-700">
+                <i class="fa-solid fa-images"></i>
+                <span>Fayllar (Galereya)</span>
+              </button>
+            </div>
           </div>
 
-          <div class="flex items-center space-x-2">
-            <button onclick="scanDuplicates()" id="btn-scan-dup" class="inline-flex items-center space-x-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-600/20 transition">
+          <!-- 2. Kompyuter (Host PC) Xotirasi -->
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-emerald-500/30 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center space-x-2 mb-2">
+                <i class="fa-solid fa-desktop text-emerald-400 text-sm"></i>
+                <h3 class="text-xs font-semibold text-slate-200">2. Kompyuter (PC) Ichki Xotirasi</h3>
+              </div>
+              <p class="text-[11px] text-slate-400 mb-3 leading-relaxed">
+                Kompyuter ichidagi istalgan papkani tanlang:
+              </p>
+              <div class="mb-3">
+                <select id="pc-folder-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 p-2 font-mono">
+                  <option value="Downloads" selected>📁 Yuklanmalar (Downloads)</option>
+                  <option value="Documents">📁 Hujjatlar (Documents)</option>
+                  <option value="Pictures">📁 Rasmlar (Pictures)</option>
+                  <option value="Desktop">📁 Ish stoli (Desktop)</option>
+                </select>
+              </div>
+            </div>
+            <button onclick="scanDuplicates()" id="btn-scan-dup" class="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center space-x-1.5 shadow-md shadow-emerald-600/20">
               <i class="fa-solid fa-magnifying-glass" id="dup-search-icon"></i>
-              <span>Dublikatlarni Qidirish</span>
-            </button>
-            <button onclick="deleteSelectedDuplicates()" id="btn-delete-dup" class="hidden inline-flex items-center space-x-1.5 px-3 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold transition">
-              <i class="fa-solid fa-trash"></i>
-              <span>Nusxalarni O'chirish</span>
+              <span>Kompyuterni Skanerlash</span>
             </button>
           </div>
         </div>
 
+        <!-- Natijalar holati -->
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+          <span class="text-xs text-slate-400 font-medium" id="dup-scan-status">Holat: Papka yoki qurilmani tanlang</span>
+          <button onclick="deleteSelectedDuplicates()" id="btn-delete-dup" class="hidden inline-flex items-center space-x-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-semibold transition">
+            <i class="fa-solid fa-trash"></i>
+            <span>Nusxalarni O'chirish</span>
+          </button>
+        </div>
+
         <div id="duplicates-container" class="border border-slate-800 rounded-xl bg-slate-950/60 p-4">
           <div class="text-center py-6 text-slate-500 text-xs" id="duplicates-placeholder">
-            Dublikatlarni qidirish tugmasini bosing.
+            Qurilma yoki Kompyuterni tanlab, skanerlashni boshlang.
           </div>
           <div id="duplicates-list" class="space-y-3 hidden"></div>
         </div>
@@ -715,17 +766,140 @@
       }
     }
 
-    // Dublikatlarni skanerlash
+    // Dublikatlarni chiroyli qilib ekranga chiqarish (umumiy funksiya)
+    function renderDuplicates(duplicates, sourceLabel, isClient = false) {
+      const placeholder = document.getElementById('duplicates-placeholder');
+      const list = document.getElementById('duplicates-list');
+      const deleteBtn = document.getElementById('btn-delete-dup');
+      const statusText = document.getElementById('dup-scan-status');
+
+      statusText.innerHTML = `<span class="text-indigo-400 font-semibold">${sourceLabel}</span>: ${duplicates.length} ta dublikat guruhi topildi`;
+
+      if (duplicates.length === 0) {
+        placeholder.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-2xl mb-2 block"></i><b>${sourceLabel}</b> ichida hech qanday dublikat fayl topilmadi! Barcha fayllar takrorlanmas.`;
+        placeholder.classList.remove('hidden');
+        list.classList.add('hidden');
+        deleteBtn.classList.add('hidden');
+        return;
+      }
+
+      placeholder.classList.add('hidden');
+      list.classList.remove('hidden');
+      if (!isClient) {
+        deleteBtn.classList.remove('hidden');
+      } else {
+        deleteBtn.classList.add('hidden');
+      }
+
+      list.innerHTML = '';
+
+      duplicates.forEach((group, idx) => {
+        let dupsHtml = '';
+        group.duplicates.forEach(dupPath => {
+          const fileName = dupPath.split('\\').pop().split('/').pop();
+          dupsHtml += `
+            <label class="flex items-start space-x-2 p-2 rounded bg-slate-900 hover:bg-slate-800/80 cursor-pointer text-xs">
+              ${!isClient ? `<input type="checkbox" name="dup-file" value="${dupPath.replace(/"/g, '&quot;')}" checked class="mt-0.5 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500">` : `<i class="fa-solid fa-copy text-rose-400 mt-1"></i>`}
+              <div class="truncate">
+                <span class="font-medium text-rose-300">[Bir xil nusxa] ${fileName}</span>
+                <p class="text-slate-500 text-[11px] truncate">${dupPath}</p>
+              </div>
+            </label>
+          `;
+        });
+
+        const origName = group.original.split('\\').pop().split('/').pop();
+
+        list.innerHTML += `
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
+              <div class="truncate max-w-lg">
+                <span class="text-slate-400">Asl fayl:</span> 
+                <span class="font-semibold text-emerald-400">${origName}</span>
+                <span class="text-slate-500 ml-1">(${group.size_mb} MB)</span>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${group.duplicates.length} ta nusxa</span>
+            </div>
+            <div class="space-y-1">${dupsHtml}</div>
+          </div>
+        `;
+      });
+    }
+
+    // 1. Ushbu qurilmaning (telefon/planshet) o'z ichki xotirasidagi fayllarni skanerlash
+    async function handleClientFilesSelected(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      const placeholder = document.getElementById('duplicates-placeholder');
+      const list = document.getElementById('duplicates-list');
+      const deleteBtn = document.getElementById('btn-delete-dup');
+      const statusText = document.getElementById('dup-scan-status');
+
+      placeholder.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xl text-indigo-400 mb-2 block"></i>Ushbu qurilmadagi ${files.length} ta fayl tahlil qilinmoqda (SHA-256)...`;
+      placeholder.classList.remove('hidden');
+      list.classList.add('hidden');
+      deleteBtn.classList.add('hidden');
+      statusText.innerText = `Ushbu qurilmadan ${files.length} ta fayl tekshirilmoqda`;
+
+      try {
+        const sizeMap = {};
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          if (f.size > 0) {
+            if (!sizeMap[f.size]) sizeMap[f.size] = [];
+            sizeMap[f.size].push(f);
+          }
+        }
+
+        const duplicates = [];
+        for (const size in sizeMap) {
+          const group = sizeMap[size];
+          if (group.length > 1) {
+            const hashMap = {};
+            for (const file of group) {
+              const slice = file.slice(0, 65536);
+              const buffer = await slice.arrayBuffer();
+              const hashBuf = await crypto.subtle.digest('SHA-256', buffer);
+              const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+              
+              if (!hashMap[hashHex]) hashMap[hashHex] = [];
+              hashMap[hashHex].push(file);
+            }
+
+            for (const h in hashMap) {
+              if (hashMap[h].length > 1) {
+                const orig = hashMap[h][0];
+                const dups = hashMap[h].slice(1);
+                duplicates.push({
+                  original: orig.name,
+                  duplicates: dups.map(d => d.webkitRelativePath || d.name),
+                  size_mb: (size / (1024 * 1024)).toFixed(2)
+                });
+              }
+            }
+          }
+        }
+
+        renderDuplicates(duplicates, `Ushbu Qurilma (${files.length} ta fayl)`, true);
+      } catch (err) {
+        showToast("Qurilmadagi fayllarni o'qishda xatolik", "error");
+        placeholder.innerHTML = '<span class="text-rose-400">Xatolik yuz berdi. Qayta urinib ko\'ring.</span>';
+      }
+    }
+
+    // 2. Kompyuter (PC) xotirasidagi papkani skanerlash
     async function scanDuplicates() {
       const btn = document.getElementById('btn-scan-dup');
       const icon = document.getElementById('dup-search-icon');
       const placeholder = document.getElementById('duplicates-placeholder');
       const list = document.getElementById('duplicates-list');
       const deleteBtn = document.getElementById('btn-delete-dup');
+      const folderChoice = document.getElementById('pc-folder-select').value;
 
       btn.disabled = true;
       icon.className = 'fa-solid fa-spinner fa-spin';
-      placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl text-indigo-400 mb-2 block"></i>Downloads papkasi skanerlanmoqda...';
+      placeholder.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xl text-emerald-400 mb-2 block"></i>Kompyuterdagi ${folderChoice} papkasi skanerlanmoqda...`;
       placeholder.classList.remove('hidden');
       list.classList.add('hidden');
       deleteBtn.classList.add('hidden');
@@ -734,55 +908,16 @@
         const res = await fetch('/scan-duplicates', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
+          body: JSON.stringify({ target_dir: folderChoice })
         });
         if (!res.ok) {
           throw new Error('Server xatosi: ' + res.status);
         }
         const data = await res.json();
-
-        if (data.duplicates.length === 0) {
-          placeholder.innerHTML = '<i class="fa-solid fa-check text-emerald-400 text-xl mb-2 block"></i>Dublikat fayllar topilmadi!';
-        } else {
-          placeholder.classList.add('hidden');
-          list.classList.remove('hidden');
-          deleteBtn.classList.remove('hidden');
-          list.innerHTML = '';
-
-          data.duplicates.forEach(group => {
-            let dupsHtml = '';
-            group.duplicates.forEach(dupPath => {
-              const fileName = dupPath.split('\\').pop().split('/').pop();
-              dupsHtml += `
-                <label class="flex items-start space-x-2 p-2 rounded bg-slate-900 hover:bg-slate-800/80 cursor-pointer text-xs">
-                  <input type="checkbox" name="dup-file" value="${dupPath.replace(/"/g, '&quot;')}" checked class="mt-0.5 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500">
-                  <div class="truncate">
-                    <span class="font-medium text-rose-300">[Nusxa] ${fileName}</span>
-                    <p class="text-slate-500 text-[11px] truncate">${dupPath}</p>
-                  </div>
-                </label>
-              `;
-            });
-
-            const origName = group.original.split('\\').pop().split('/').pop();
-
-            list.innerHTML += `
-              <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
-                  <div class="truncate max-w-lg">
-                    <span class="text-slate-400">Asl fayl:</span> 
-                    <span class="font-semibold text-emerald-400">${origName}</span>
-                    <span class="text-slate-500 ml-1">(${group.size_mb} MB)</span>
-                  </div>
-                  <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${group.duplicates.length} ta nusxa</span>
-                </div>
-                <div class="space-y-1">${dupsHtml}</div>
-              </div>
-            `;
-          });
-        }
+        renderDuplicates(data.duplicates, `Kompyuter: ${data.scanned_dir || folderChoice}`, false);
       } catch (e) {
-        showToast("Skanerlashda xatolik yuz berdi", "error");
+        showToast("Kompyuterni skanerlashda xatolik yuz berdi", "error");
+        placeholder.innerHTML = '<span class="text-rose-400">Xatolik yuz berdi. Qayta urinib ko\'ring.</span>';
       } finally {
         btn.disabled = false;
         icon.className = 'fa-solid fa-magnifying-glass';

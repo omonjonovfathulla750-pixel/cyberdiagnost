@@ -497,9 +497,23 @@ def flush_dns():
 @app.route('/scan-duplicates', methods=['POST'])
 def scan_dup():
     data = request.get_json(silent=True) or {}
-    target_dir = data.get('target_dir') or os.path.expanduser(r'~/Downloads')
+    folder_choice = data.get('target_dir', 'Downloads')
+    
+    # Qisqa nomlarni to'liq yo'lga aylantirish
+    home = os.path.expanduser('~')
+    shortcuts = {
+        'Downloads': os.path.join(home, 'Downloads'),
+        'Documents': os.path.join(home, 'Documents'),
+        'Pictures': os.path.join(home, 'Pictures'),
+        'Desktop': os.path.join(home, 'Desktop'),
+    }
+    
+    target_dir = shortcuts.get(folder_choice, folder_choice)
+    if not os.path.isabs(target_dir):
+        target_dir = os.path.join(home, target_dir)
+        
     dups = DuplicateFinder.find_duplicates(target_dir)
-    return jsonify({"status": "success", "duplicates": dups})
+    return jsonify({"status": "success", "duplicates": dups, "scanned_dir": target_dir})
 
 @app.route('/scan-large-files', methods=['POST'])
 def scan_large():
