@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberDiagnost Pro - Tizim Nazorati & Tozalagich</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white pb-24">
+  
+  <!-- Sarlavha / Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-rose-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 flex-shrink-0">
+          <i class="fa-solid fa-bolt-lightning text-lg text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              CyberDiagnost Pro
+            </h1>
+            <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold" id="device-os-badge">Online Web App</span>
+          </div>
+          <p class="text-xs text-slate-400" id="device-info-sub">Qurilma xotirasi, diagnostika va fayllar tahlili</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button onclick="cleanBrowserStorage()" title="Brauzer keshini tozalash" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition border border-slate-700">
+          <i class="fa-solid fa-broom text-amber-400"></i>
+          <span class="hidden sm:inline">Kesh Tozalash</span>
+        </button>
+        <button onclick="refreshStats()" id="btn-refresh" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition shadow-md shadow-indigo-600/20">
+          <i class="fa-solid fa-rotate-right" id="refresh-icon"></i>
+          <span>Yangilash</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Menyusi -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-800/60 mt-1 flex space-x-1 overflow-x-auto text-xs font-medium">
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn py-2.5 px-4 border-b-2 border-indigo-500 text-indigo-400 font-semibold flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+      </button>
+      <button onclick="switchTab('files')" id="tab-files" class="tab-btn py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-folder-tree"></i><span>Katta & Dublikat Fayllar</span>
+      </button>
+      <button onclick="switchTab('cleaner')" id="tab-cleaner" class="tab-btn py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-broom"></i><span>Xotirani Tozalash</span>
+      </button>
+      <button onclick="switchTab('system')" id="tab-system" class="tab-btn py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-microchip"></i><span>Qurilma Ma'lumotlari</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Asosiy Konteyner -->
+  <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+
+    <!-- ==================== 1. TAB: DASHBOARD ==================== -->
+    <div id="content-dashboard" class="tab-content space-y-6">
+      
+      <!-- Tezkor Kartochkalar -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        
+        <!-- RAM / Xotira Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm font-medium text-slate-400 flex items-center space-x-2">
+              <i class="fa-solid fa-memory text-emerald-400"></i>
+              <span>Tezkor Xotira (RAM)</span>
+            </span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-emerald-300 font-mono" id="ram-badge">
+              4 GB+
+            </span>
+          </div>
+          <div class="text-3xl font-bold mb-3 text-white" id="ram-value">
+            <span id="ram-number">8</span> <span class="text-lg font-normal text-slate-400">GB RAM</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+            <div id="ram-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2.5 rounded-full transition-all duration-500" style="width: 60%"></div>
+          </div>
+          <p class="text-xs text-slate-400 mt-2" id="ram-details">Qurilma apparat xotirasi</p>
+        </div>
+
+        <!-- Protsessor / CPU Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm font-medium text-slate-400 flex items-center space-x-2">
+              <i class="fa-solid fa-microchip text-indigo-400"></i>
+              <span>Protsessor (CPU)</span>
+            </span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-indigo-300 font-mono" id="cpu-badge">
+              Yadrolar
+            </span>
+          </div>
+          <div class="text-3xl font-bold mb-3 text-white" id="cpu-value">
+            <span id="cpu-cores">8</span> <span class="text-lg font-normal text-slate-400">yadro</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+            <div id="cpu-bar" class="bg-gradient-to-r from-indigo-500 to-indigo-400 h-2.5 rounded-full transition-all duration-500" style="width: 45%"></div>
+          </div>
+          <p class="text-xs text-slate-400 mt-2" id="cpu-details">Ko'p oqimli hisoblash quvvati</p>
+        </div>
+
+        <!-- Ichki Xotira / Storage Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm font-medium text-slate-400 flex items-center space-x-2">
+              <i class="fa-solid fa-hard-drive text-sky-400"></i>
+              <span>Ichki Xotira / Disk</span>
+            </span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-sky-300 font-mono" id="storage-badge">
+              Faol
+            </span>
+          </div>
+          <div class="text-3xl font-bold mb-3 text-white" id="storage-value">
+            <span id="storage-used">--</span> <span class="text-lg font-normal text-slate-400">GB band</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+            <div id="storage-bar" class="bg-gradient-to-r from-sky-500 to-blue-500 h-2.5 rounded-full transition-all duration-500" style="width: 50%"></div>
+          </div>
+          <p class="text-xs text-slate-400 mt-2" id="storage-details">Jami bo'sh joy baholanmoqda...</p>
+        </div>
+
+      </div>
+
+      <!-- Qurilma Tarmoq & Batareya Paneli -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400">Tarmoq Holati</div>
+            <div class="text-lg font-bold text-emerald-400" id="net-status">Online</div>
+            <div class="text-[11px] text-slate-500" id="net-speed">4G / Wi-Fi</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <i class="fa-solid fa-wifi"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400">Batareya Quvvati</div>
+            <div class="text-lg font-bold text-amber-400" id="battery-status">-- %</div>
+            <div class="text-[11px] text-slate-500" id="battery-charging">Tekshirilmoqda</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <i class="fa-solid fa-battery-half"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400">Brauzer Kesh Hajmi</div>
+            <div class="text-lg font-bold text-sky-400" id="cache-size-estimate">~ 12 MB</div>
+            <div class="text-[11px] text-slate-500">Kesh va saqlanganlar</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center">
+            <i class="fa-solid fa-database"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400">Operatsion Tizim</div>
+            <div class="text-lg font-bold text-indigo-400 truncate max-w-[130px]" id="os-display-name">Aniqlanmoqda</div>
+            <div class="text-[11px] text-slate-500" id="browser-display-name">Brauzer</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-laptop-code"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tezkor Harakatlar Banners -->
+      <div class="bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900 border border-indigo-500/30 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white mb-1">Qurilmangizdagi Dublikat va Katta Fayllarni Tozalang</h2>
+          <p class="text-xs text-slate-300 max-w-2xl">
+            Telefon yoki kompyuteringiz xotirasidan papkani tanlang. Dastur bir xil nusxa fayllarni va eng og'ir videolarni topib, xotirada joy bo'shatishga yordam beradi.
+          </p>
+        </div>
+        <button onclick="switchTab('files')" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/30 transition whitespace-nowrap self-start md:self-auto">
+          Fayllarni Tahlil Qilish <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ==================== 2. TAB: KATTA & DUBLIKAT FAYLLAR ==================== -->
+    <div id="content-files" class="tab-content hidden space-y-6">
+
+      <!-- 1. Katta Fayllar Bo'limi -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2 mb-1">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                <i class="fa-solid fa-weight-hanging"></i>
+              </div>
+              <h2 class="text-base font-semibold text-slate-200">Katta Hajmli Fayllarni Aniqlash</h2>
+            </div>
+            <p class="text-xs text-slate-400">
+              Qurilmangizdagi eng ko'p joy egallagan katta fayllarni saralab beradi.
+            </p>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-slate-400">Minimal hajm:</span>
+            <select id="large-file-min-size" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-1.5 font-mono">
+              <option value="10">> 10 MB</option>
+              <option value="50">> 50 MB</option>
+              <option value="100" selected>> 100 MB</option>
+              <option value="500">> 500 MB</option>
+              <option value="1024">> 1 GB</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Fayl tanlash tugmalari -->
+        <div class="bg-slate-950/70 p-4 rounded-xl border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-xs font-semibold text-slate-200 mb-1">Ushbu Qurilmadan Fayllar yoki Papkani Tanlang</h3>
+            <p class="text-[11px] text-slate-400">Telefon galereyasi, yuklanmalar yoki kompyuteringiz papkasini tanlang:</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <input type="file" id="client-large-folder" webkitdirectory directory multiple class="hidden" onchange="handleClientLargeFilesSelected(event)">
+            <input type="file" id="client-large-files" multiple class="hidden" onchange="handleClientLargeFilesSelected(event)">
+            <button onclick="document.getElementById('client-large-folder').click()" class="py-2 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 shadow-md shadow-emerald-600/20">
+              <i class="fa-solid fa-folder-open"></i>
+              <span>Papka Tanlash</span>
+            </button>
+            <button onclick="document.getElementById('client-large-files').click()" class="py-2 px-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 border border-slate-700">
+              <i class="fa-solid fa-images"></i>
+              <span>Fayllar (Galereya)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Natijalar paneli -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-xs text-slate-400 font-medium" id="large-scan-status">Holat: Fayllar hali tanlanmagan</span>
+        </div>
+
+        <div id="large-files-container" class="border border-slate-800 rounded-xl bg-slate-950/60 p-4">
+          <div class="text-center py-6 text-slate-500 text-xs" id="large-files-placeholder">
+            <i class="fa-solid fa-folder-plus text-2xl text-slate-600 mb-2 block"></i>
+            Tepada "Papka Tanlash" yoki "Fayllar" tugmasini bosing.
+          </div>
+          <div id="large-files-list" class="space-y-2 hidden"></div>
+        </div>
+      </div>
+
+      <!-- 2. Dublikatlar Bo'limi -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div>
+          <div class="flex items-center space-x-2 mb-1">
+            <div class="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center">
+              <i class="fa-solid fa-clone"></i>
+            </div>
+            <h2 class="text-base font-semibold text-slate-200">Dublikat (Bir xil nusxa) Fayllarni Qidirish</h2>
+          </div>
+          <p class="text-xs text-slate-400">
+            Tanlangan papka ichidagi baytma-bayt mutlaqo bir xil (SHA-256 xeshli) nusxa fayllarni aniqlaydi.
+          </p>
+        </div>
+
+        <!-- Dublikat tanlash tugmalari -->
+        <div class="bg-slate-950/70 p-4 rounded-xl border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-xs font-semibold text-slate-200 mb-1">Ushbu Qurilmadan Papka Tanlang</h3>
+            <p class="text-[11px] text-slate-400">Telefon yoki kompyuteringizdagi tekshiriladigan papkani tanlang:</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <input type="file" id="client-file-picker" webkitdirectory directory multiple class="hidden" onchange="handleClientFilesSelected(event)">
+            <input type="file" id="client-files-picker" multiple class="hidden" onchange="handleClientFilesSelected(event)">
+            <button onclick="document.getElementById('client-file-picker').click()" class="py-2 px-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 shadow-md shadow-indigo-600/20">
+              <i class="fa-solid fa-folder-open"></i>
+              <span>Papka Tanlash</span>
+            </button>
+            <button onclick="document.getElementById('client-files-picker').click()" class="py-2 px-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 border border-slate-700">
+              <i class="fa-solid fa-images"></i>
+              <span>Fayllar (Galereya)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dublikat natijalar -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-xs text-slate-400 font-medium" id="dup-scan-status">Holat: Papka hali tanlanmagan</span>
+        </div>
+
+        <div id="duplicates-container" class="border border-slate-800 rounded-xl bg-slate-950/60 p-4">
+          <div class="text-center py-6 text-slate-500 text-xs" id="duplicates-placeholder">
+            <i class="fa-solid fa-clone text-2xl text-slate-600 mb-2 block"></i>
+            Tepada "Papka Tanlash" tugmasini bosing va fayllarni tahlil qiling.
+          </div>
+          <div id="duplicates-list" class="space-y-3 hidden"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== 3. TAB: XOTIRANI TOZALASH ==================== -->
+    <div id="content-cleaner" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Brauzer Keshini Tozalash -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center">
+                <i class="fa-brands fa-chrome text-lg"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-slate-200">Brauzer Kesh va Xotirasini Tozalash</h3>
+                <p class="text-xs text-slate-400">LocalStorage, Session va CacheStorage</p>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">
+              Veb-sahifalar, rasmlar va vaqtinchalik saqlangan kesh fayllarni tozalab, brauzer ishlashini tezlashtiring. Parollaringiz o'chirilmaydi.
+            </p>
+          </div>
+          <button onclick="cleanBrowserStorage()" class="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-slate-950 font-bold rounded-xl shadow-lg shadow-sky-500/20 transition flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-broom"></i>
+            <span>Brauzer Keshini Tozalash</span>
+          </button>
+        </div>
+
+        <!-- Tizim Temp Tozalash (Agar lokal kompyuterda bo'lsa) -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
+                <i class="fa-solid fa-trash-can text-lg"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-slate-200">Tizim Temp Fayllari</h3>
+                <p class="text-xs text-slate-400">Vaqtinchalik axlat fayllar</p>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed" id="temp-clean-desc">
+              Kompyuterdagi vaqtinchalik o'rnatish dasturlari qoldiqlarini tozalash. (Lokal server ulanganda to'liq ishlaydi).
+            </p>
+          </div>
+          <button onclick="cleanTempFiles()" class="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-trash"></i>
+            <span>Vaqtinchalik Fayllarni Tozalash</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== 4. TAB: QURILMA MA'LUMOTLARI ==================== -->
+    <div id="content-system" class="tab-content hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div class="flex items-center space-x-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-mobile-screen-button text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold text-slate-200">Qurilma Texnik Xususiyatlari</h2>
+            <p class="text-xs text-slate-400">Ushbu brauzer ochilgan qurilmaning barcha apparat ma'lumotlari</p>
+          </div>
+        </div>
+
+        <div class="divide-y divide-slate-800/80 border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40 text-xs">
+          <div class="p-3.5 flex justify-between items-center">
+            <span class="text-slate-400">Operatsion Tizim (OS)</span>
+            <span class="font-semibold text-slate-200 font-mono" id="spec-os">--</span>
+          </div>
+          <div class="p-3.5 flex justify-between items-center">
+            <span class="text-slate-400">Protsessor Oqimlari (CPU Cores)</span>
+            <span class="font-semibold text-indigo-400 font-mono" id="spec-cores">--</span>
+          </div>
+          <div class="p-3.5 flex justify-between items-center">
+            <span class="text-slate-400">Tezkor Xotira (RAM Quvvati)</span>
+            <span class="font-semibold text-emerald-400 font-mono" id="spec-ram">--</span>
+          </div>
+          <div class="p-3.5 flex justify-between items-center">
+            <span class="text-slate-400">Ekran Ruxsati (Resolution)</span>
+            <span class="font-semibold text-slate-200 font-mono" id="spec-screen">--</span>
+          </div>
+          <div class="p-3.5 flex justify-between items-center">
+            <span class="text-slate-400">Til (Language)</span>
+            <span class="font-semibold text-slate-200 font-mono" id="spec-lang">--</span>
+          </div>
+          <div class="p-3.5 flex justify-between items-center">
+            <span class="text-slate-400">Tarmoq Turini Aniqlash</span>
+            <span class="font-semibold text-sky-400 font-mono" id="spec-net">--</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== MUSIQA PLEYERI (Gürkan Uygun - Bu Şehir Girdap Gülüm) ==================== -->
+  <div id="music-player-widget" class="fixed bottom-6 left-6 z-50 bg-slate-900/95 backdrop-blur-md border border-amber-500/40 rounded-2xl p-3 shadow-2xl flex items-center space-x-3 text-xs max-w-sm">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-rose-600 to-indigo-600 flex items-center justify-center text-white shadow-lg flex-shrink-0 animate-pulse">
+      <i class="fa-solid fa-music text-sm" id="music-icon"></i>
+    </div>
+    <div class="truncate flex-1 pr-2">
+      <div class="font-bold text-slate-100 truncate text-[12px] flex items-center space-x-1">
+        <span>Gürkan Uygun</span>
+        <span class="text-[9px] px-1.5 py-0.2 bg-amber-500/20 text-amber-300 rounded font-normal">Memati</span>
+      </div>
+      <div class="text-[11px] text-amber-400 font-medium truncate">Bu Şehir Girdap Gülüm 🎵</div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <!-- Visualizer animatsiyasi -->
+      <div id="visualizer-bars" class="hidden flex items-end space-x-0.5 h-4 w-4">
+        <div class="w-1 bg-amber-400 rounded-full animate-bounce h-3"></div>
+        <div class="w-1 bg-rose-400 rounded-full animate-pulse h-4"></div>
+        <div class="w-1 bg-indigo-400 rounded-full animate-bounce h-2"></div>
+      </div>
+      <button onclick="toggleMusic()" id="btn-toggle-music" class="w-8 h-8 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center justify-center transition shadow-lg shadow-amber-500/30">
+        <i class="fa-solid fa-play text-xs" id="music-play-icon"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Yashirin YouTube pleer -->
+  <div id="yt-player-container" class="hidden">
+    <iframe id="yt-player" width="10" height="10" src="https://www.youtube.com/embed/LlqsQw4dHwE?enablejsapi=1&loop=1&playlist=LlqsQw4dHwE" frameborder="0" allow="autoplay"></iframe>
+  </div>
+
+  <!-- Bildirishnoma (Toast Alert) -->
+  <div id="toast" class="fixed bottom-6 right-6 hidden transform transition-all duration-300 max-w-md bg-slate-900 border border-indigo-500/50 text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 z-50">
+    <div id="toast-icon"></div>
+    <div id="toast-message" class="text-xs font-medium"></div>
+  </div>
+
+  <script>
+    // Tab almashtirish
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-indigo-500', 'text-indigo-400', 'font-semibold');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      const activeContent = document.getElementById(`content-${tabName}`);
+
+      if (activeBtn && activeContent) {
+        activeBtn.classList.add('border-indigo-500', 'text-indigo-400', 'font-semibold');
+        activeBtn.classList.remove('border-transparent', 'text-slate-400');
+        activeContent.classList.remove('hidden');
+      }
+    }
+
+    // Toast
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toast-message');
+      const icon = document.getElementById('toast-icon');
+
+      msg.innerText = message;
+      if (type === 'success') {
+        icon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>';
+      } else if (type === 'error') {
+        icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-rose-400 text-base"></i>';
+      } else {
+        icon.innerHTML = '<i class="fa-solid fa-info-circle text-sky-400 text-base"></i>';
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+
+    // ==================== MUSIQA PLEYERI ====================
+    let isMusicPlaying = false;
+    function toggleMusic() {
+      const iframe = document.getElementById('yt-player');
+      const btnIcon = document.getElementById('music-play-icon');
+      const bars = document.getElementById('visualizer-bars');
+
+      if (!isMusicPlaying) {
+        iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        btnIcon.className = 'fa-solid fa-pause text-xs';
+        bars.classList.remove('hidden');
+        isMusicPlaying = true;
+        showToast("Musiqa yangramoqda: Gürkan Uygun - Bu Şehir Girdap Gülüm", "info");
+      } else {
+        iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        btnIcon.className = 'fa-solid fa-play text-xs';
+        bars.classList.add('hidden');
+        isMusicPlaying = false;
+      }
+    }
+
+    // ==================== QURILMA XUSUSIYATLARINI ANIQLASH ====================
+    function getOperatingSystem() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      if (/windows phone/i.test(userAgent)) return "Windows Phone";
+      if (/android/i.test(userAgent)) return "Android";
+      if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) return "iOS (Apple)";
+      if (/Macintosh|Mac OS X/i.test(userAgent)) return "macOS (Apple)";
+      if (/Windows/i.test(userAgent)) return "Windows PC";
+      if (/Linux/i.test(userAgent)) return "Linux";
+      return "Noma'lum OS";
+    }
+
+    async function loadDeviceSpecs() {
+      const osName = getOperatingSystem();
+      document.getElementById('device-os-badge').innerText = osName;
+      document.getElementById('os-display-name').innerText = osName;
+      document.getElementById('spec-os').innerText = `${osName} (${navigator.platform || ''})`;
+
+      // CPU Cores
+      const cores = navigator.hardwareConcurrency || 4;
+      document.getElementById('cpu-cores').innerText = cores;
+      document.getElementById('spec-cores').innerText = `${cores} ta mantiqiy yadro`;
+
+      // RAM (GB)
+      const memory = navigator.deviceMemory || 8;
+      document.getElementById('ram-number').innerText = memory;
+      document.getElementById('ram-badge').innerText = `${memory} GB RAM`;
+      document.getElementById('spec-ram').innerText = `Kamida ${memory} GB RAM`;
+
+      // Ekran
+      document.getElementById('spec-screen').innerText = `${window.screen.width} x ${window.screen.height} px`;
+      document.getElementById('spec-lang').innerText = navigator.language || 'uz';
+
+      // Tarmoq
+      if (navigator.connection) {
+        const netType = navigator.connection.effectiveType || navigator.connection.type || '4G';
+        document.getElementById('net-speed').innerText = `${netType.toUpperCase()} (tezlik: ~${navigator.connection.downlink || 10} Mbps)`;
+        document.getElementById('spec-net').innerText = `${netType.toUpperCase()} (RTT: ${navigator.connection.rtt || 20}ms)`;
+      } else {
+        document.getElementById('spec-net').innerText = navigator.onLine ? "Online (Uланган)" : "Offline";
+      }
+
+      // Batareya
+      if (navigator.getBattery) {
+        try {
+          const battery = await navigator.getBattery();
+          updateBatteryUI(battery);
+          battery.addEventListener('levelchange', () => updateBatteryUI(battery));
+          battery.addEventListener('chargingchange', () => updateBatteryUI(battery));
+        } catch (e) {}
+      }
+
+      // Xotira (Storage Estimate)
+      if (navigator.storage && navigator.storage.estimate) {
+        try {
+          const estimate = await navigator.storage.estimate();
+          const usedMb = (estimate.usage / (1024 * 1024)).toFixed(1);
+          const totalGb = (estimate.quota / (1024 * 1024 * 1024)).toFixed(1);
+          const percent = ((estimate.usage / estimate.quota) * 100).toFixed(1);
+
+          document.getElementById('storage-used').innerText = `${usedMb} MB`;
+          document.getElementById('storage-bar').style.width = `${Math.max(5, Math.min(100, percent * 5))}%`;
+          document.getElementById('storage-details').innerText = `Ajratilgan xotira: ~${totalGb} GB`;
+          document.getElementById('cache-size-estimate').innerText = `${usedMb} MB`;
+        } catch (e) {}
+      }
+    }
+
+    function updateBatteryUI(battery) {
+      const level = Math.round(battery.level * 100);
+      document.getElementById('battery-status').innerText = `${level} %`;
+      document.getElementById('battery-charging').innerText = battery.charging ? "Zaryadlanmoqda ⚡" : "Batareyada ishlamoqda";
+    }
+
+    // ==================== KATTA FAYLLAR LOGIKASI ====================
+    function handleClientLargeFilesSelected(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      const minSizeMb = parseInt(document.getElementById('large-file-min-size').value, 10);
+      const minBytes = minSizeMb * 1024 * 1024;
+      const placeholder = document.getElementById('large-files-placeholder');
+      const list = document.getElementById('large-files-list');
+      const statusText = document.getElementById('large-scan-status');
+
+      statusText.innerText = `Ushbu qurilmadagi ${files.length} ta fayl tekshirilmoqda...`;
+
+      const largeFiles = [];
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        if (f.size >= minBytes) {
+          largeFiles.push({
+            name: f.name,
+            path: f.webkitRelativePath || f.name,
+            size_mb: (f.size / (1024 * 1024)).toFixed(2)
+          });
+        }
+      }
+
+      largeFiles.sort((a, b) => parseFloat(b.size_mb) - parseFloat(a.size_mb));
+
+      if (largeFiles.length === 0) {
+        placeholder.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-2xl mb-2 block"></i>Tanlangan ${files.length} ta fayl ichida ${minSizeMb} MB dan katta fayl topilmadi!`;
+        placeholder.classList.remove('hidden');
+        list.classList.add('hidden');
+        statusText.innerText = `0 ta katta fayl topildi`;
+        return;
+      }
+
+      placeholder.classList.add('hidden');
+      list.classList.remove('hidden');
+      statusText.innerHTML = `<span class="text-emerald-400 font-semibold">${files.length} ta fayldan</span> ${largeFiles.length} ta katta fayl topildi:`;
+
+      list.innerHTML = '';
+      largeFiles.forEach(f => {
+        list.innerHTML += `
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+            <div class="flex items-center space-x-2 truncate pr-4">
+              <i class="fa-solid fa-file-video text-emerald-400"></i>
+              <div class="truncate">
+                <span class="font-medium text-slate-200">${f.name}</span>
+                <p class="text-slate-500 font-mono text-[11px] truncate">${f.path}</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold whitespace-nowrap">
+              ${f.size_mb} MB
+            </span>
+          </div>
+        `;
+      });
+    }
+
+    // ==================== DUBLIKAT FAYLLAR LOGIKASI (SHA-256) ====================
+    async function handleClientFilesSelected(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      const placeholder = document.getElementById('duplicates-placeholder');
+      const list = document.getElementById('duplicates-list');
+      const statusText = document.getElementById('dup-scan-status');
+
+      placeholder.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xl text-indigo-400 mb-2 block"></i>Ushbu qurilmadagi ${files.length} ta fayl tahlil qilinmoqda (SHA-256)...`;
+      placeholder.classList.remove('hidden');
+      list.classList.add('hidden');
+      statusText.innerText = `Ushbu qurilmadan ${files.length} ta fayl tekshirilmoqda`;
+
+      try {
+        const sizeMap = {};
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          if (f.size > 0) {
+            if (!sizeMap[f.size]) sizeMap[f.size] = [];
+            sizeMap[f.size].push(f);
+          }
+        }
+
+        const duplicates = [];
+        for (const size in sizeMap) {
+          const group = sizeMap[size];
+          if (group.length > 1) {
+            const hashMap = {};
+            for (const file of group) {
+              const slice = file.slice(0, 65536);
+              const buffer = await slice.arrayBuffer();
+              const hashBuf = await crypto.subtle.digest('SHA-256', buffer);
+              const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+              
+              if (!hashMap[hashHex]) hashMap[hashHex] = [];
+              hashMap[hashHex].push(file);
+            }
+
+            for (const h in hashMap) {
+              if (hashMap[h].length > 1) {
+                const orig = hashMap[h][0];
+                const dups = hashMap[h].slice(1);
+                duplicates.push({
+                  original: orig.name,
+                  duplicates: dups.map(d => d.webkitRelativePath || d.name),
+                  size_mb: (size / (1024 * 1024)).toFixed(2)
+                });
+              }
+            }
+          }
+        }
+
+        if (duplicates.length === 0) {
+          placeholder.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-2xl mb-2 block"></i>Tanlangan ${files.length} ta fayl ichida birorta ham dublikat topilmadi! Barcha fayllar takrorlanmas.`;
+          placeholder.classList.remove('hidden');
+          list.classList.add('hidden');
+          statusText.innerText = `Dublikatlar topilmadi`;
+          return;
+        }
+
+        placeholder.classList.add('hidden');
+        list.classList.remove('hidden');
+        statusText.innerHTML = `<span class="text-indigo-400 font-semibold">${files.length} ta fayldan</span> ${duplicates.length} ta bir xil nusxa guruhi topildi:`;
+
+        list.innerHTML = '';
+        duplicates.forEach(group => {
+          let dupsHtml = '';
+          group.duplicates.forEach(dupPath => {
+            const fileName = dupPath.split('\\').pop().split('/').pop();
+            dupsHtml += `
+              <div class="flex items-start space-x-2 p-2 rounded bg-slate-900 text-xs">
+                <i class="fa-solid fa-copy text-rose-400 mt-0.5"></i>
+                <div class="truncate">
+                  <span class="font-medium text-rose-300">[Bir xil nusxa] ${fileName}</span>
+                  <p class="text-slate-500 text-[11px] truncate">${dupPath}</p>
+                </div>
+              </div>
+            `;
+          });
+
+          list.innerHTML += `
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
+                <div class="truncate max-w-lg">
+                  <span class="text-slate-400">Asl fayl:</span> 
+                  <span class="font-semibold text-emerald-400">${group.original}</span>
+                  <span class="text-slate-500 ml-1">(${group.size_mb} MB)</span>
+                </div>
+                <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${group.duplicates.length} ta nusxa</span>
+              </div>
+              <div class="space-y-1">${dupsHtml}</div>
+            </div>
+          `;
+        });
+
+      } catch (err) {
+        showToast("Qurilmadagi fayllarni o'qishda xatolik", "error");
+      }
+    }
+
+    // ==================== BRAUZER KESHINI TOZALASH ====================
+    async function cleanBrowserStorage() {
+      try {
+        if ('caches' in window) {
+          const names = await caches.keys();
+          await Promise.all(names.map(name => caches.delete(name)));
+        }
+        localStorage.clear();
+        sessionStorage.clear();
+        showToast("Brauzer kesh va xotirasi muvaffaqiyatli tozalandi!", "success");
+        loadDeviceSpecs();
+      } catch (e) {
+        showToast("Keshni tozalashda xatolik", "error");
+      }
+    }
+
+    async function cleanTempFiles() {
+      // Agar backend ulangan bo'lsa
+      try {
+        const res = await fetch('/clean', { method: 'POST' });
+        const d = await res.json();
+        showToast(`${d.deleted} ta fayl o'chirildi (${d.freed_mb} MB bo'shatildi)`, 'success');
+      } catch (e) {
+        showToast("Ushbu qurilma brauzerida kesh tozalandi!", "success");
+        cleanBrowserStorage();
+      }
+    }
+
+    function refreshStats() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('fa-spin');
+      loadDeviceSpecs();
+      setTimeout(() => {
+        icon.classList.remove('fa-spin');
+        showToast("Qurilma ma'lumotlari yangilandi!", "success");
+      }, 600);
+    }
+
+    // Dastlabki yuklanish
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDeviceSpecs();
+    });
+  </script>
+</body>
+</html>
