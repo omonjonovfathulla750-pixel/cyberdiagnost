@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  pc-optimizer:
+    build: .
+    container_name: pc_optimizer_pro
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000

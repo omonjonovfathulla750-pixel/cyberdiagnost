@@ -2,13 +2,35 @@ import os
 import shutil
 import hashlib
 import subprocess
-import winreg
+import platform
+import socket
 import psutil
 from flask import Flask, render_template, request, jsonify
 
+# Windows-specific winreg xavfsiz import
+try:
+    import winreg
+except ImportError:
+    winreg = None
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
-# --- 1. TIZIM VA SSD DIAGNOSTIKASI ---
+CURRENT_OS = platform.system() # 'Windows', 'Linux', 'Darwin' (macOS)
+
+def get_local_ip():
+    """Lokal Wi-Fi/LAN tarmog'idagi IP manzilni aniqlash"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
+
+
+# --- 1. KROSS-PLATFORMA TIZIM DIAGNOSTIKASI ---
 class SystemDiagnoser:
     @staticmethod
     def get_system_stats():
@@ -17,10 +39,14 @@ class SystemDiagnoser:
         ram = psutil.virtual_memory()
         
         disks_info = []
-        for partition in psutil.disk_partitions():
+        for partition in psutil.disk_partitions(all=False):
             try:
-                if 'cdrom' in partition.opts or partition.fstype == '':
+                # Maxsus yoki virtual fayl tizimlarini chetlab o'tish
+                if CURRENT_OS == 'Windows' and ('cdrom' in partition.opts or partition.fstype == ''):
                     continue
+                if CURRENT_OS in ['Linux', 'Darwin'] and partition.mountpoint.startswith(('/snap', '/boot', '/dev', '/proc', '/sys')):
+                    continue
+                    
                 usage = psutil.disk_usage(partition.mountpoint)
                 disks_info.append({
                     "device": partition.device,
@@ -34,23 +60,42 @@ class SystemDiagnoser:
                 continue
                 
         return {
+            "os": CURRENT_OS,
+            "os_release": platform.release(),
             "cpu": cpu_usage,
             "cpu_freq_ghz": round(cpu_freq.current / 1000, 2) if cpu_freq else 0,
+            "cpu_cores": psutil.cpu_count(logical=True),
             "ram": ram.percent,
             "ram_used_gb": round(ram.used / (1024**3), 2),
             "ram_total_gb": round(ram.total / (1024**3), 2),
-            "disks": disks_info
+            "disks": disks_info,
+            "local_ip": get_local_ip()
         }
 
-# --- 2. KERAKSIZ FAYLLAR (TEMP VA KESH) ---
+
+# --- 2. KROSS-PLATFORMA KERAKSIZ FAYLLARNI TOZALASH ---
 class JunkCleaner:
     def __init__(self):
-        self.target_paths = [
-            os.path.expandvars(r'%TEMP%'),
-            r'C:\Windows\Temp',
-            os.path.expandvars(r'%LOCALAPPDATA%\Temp')
-        ]
-        self.target_paths = list(set([p for p in self.target_paths if os.path.exists(p)]))
+        self.target_paths = []
+        if CURRENT_OS == 'Windows':
+            self.target_paths = [
+                os.path.expandvars(r'%TEMP%'),
+                r'C:\Windows\Temp',
+                os.path.expandvars(r'%LOCALAPPDATA%\Temp')
+            ]
+        elif CURRENT_OS == 'Darwin': # macOS
+            self.target_paths = [
+                os.path.expanduser('~/Library/Caches/TemporaryItems'),
+                '/tmp',
+                '/var/tmp'
+            ]
+        else: # Linux
+            self.target_paths = [
+                '/tmp',
+                '/var/tmp',
+                os.path.expanduser('~/.cache/thumbnails')
+            ]
+        self.target_paths = list(set([p for p in self.target_paths if p and os.path.exists(p)]))
 
     def scan_junk(self):
         total_bytes = 0
@@ -61,6 +106,8 @@ class JunkCleaner:
                     for file in files:
                         f_path = os.path.join(root, file)
                         try:
+                            if os.path.islink(f_path):
+                                continue
                             size = os.path.getsize(f_path)
                             total_bytes += size
                             file_list.append(f_path)
@@ -85,29 +132,47 @@ class JunkCleaner:
             "freed_mb": round(freed_bytes / (1024 * 1024), 2)
         }
 
-# --- 3. BRAUZER KESHLARINI TOZALASH ---
+
+# --- 3. KROSS-PLATFORMA BRAUZER KESHLARI ---
 class BrowserCleaner:
     @staticmethod
     def get_cache_paths():
-        local_app_data = os.environ.get('LOCALAPPDATA', '')
-        app_data = os.environ.get('APPDATA', '')
-        
-        candidates = {
-            "Google Chrome": [
-                os.path.join(local_app_data, r'Google\Chrome\User Data\Default\Cache'),
-                os.path.join(local_app_data, r'Google\Chrome\User Data\Default\Code Cache')
-            ],
-            "Microsoft Edge": [
-                os.path.join(local_app_data, r'Microsoft\Edge\User Data\Default\Cache'),
-                os.path.join(local_app_data, r'Microsoft\Edge\User Data\Default\Code Cache')
-            ],
-            "Brave Browser": [
-                os.path.join(local_app_data, r'BraveSoftware\Brave-Browser\User Data\Default\Cache')
-            ],
-            "Opera": [
-                os.path.join(app_data, r'Opera Software\Opera Stable\Cache')
-            ]
-        }
+        candidates = {}
+        if CURRENT_OS == 'Windows':
+            local_app_data = os.environ.get('LOCALAPPDATA', '')
+            app_data = os.environ.get('APPDATA', '')
+            candidates = {
+                "Google Chrome": [
+                    os.path.join(local_app_data, r'Google\Chrome\User Data\Default\Cache'),
+                    os.path.join(local_app_data, r'Google\Chrome\User Data\Default\Code Cache')
+                ],
+                "Microsoft Edge": [
+                    os.path.join(local_app_data, r'Microsoft\Edge\User Data\Default\Cache'),
+                    os.path.join(local_app_data, r'Microsoft\Edge\User Data\Default\Code Cache')
+                ],
+                "Brave Browser": [
+                    os.path.join(local_app_data, r'BraveSoftware\Brave-Browser\User Data\Default\Cache')
+                ],
+                "Opera": [
+                    os.path.join(app_data, r'Opera Software\Opera Stable\Cache')
+                ]
+            }
+        elif CURRENT_OS == 'Darwin': # macOS
+            home = os.path.expanduser('~')
+            candidates = {
+                "Google Chrome": [os.path.join(home, 'Library/Caches/Google/Chrome/Default/Cache')],
+                "Microsoft Edge": [os.path.join(home, 'Library/Caches/Microsoft Edge/Default/Cache')],
+                "Brave Browser": [os.path.join(home, 'Library/Caches/BraveSoftware/Brave-Browser/Default/Cache')],
+                "Safari": [os.path.join(home, 'Library/Caches/com.apple.Safari')]
+            }
+        else: # Linux
+            home = os.path.expanduser('~')
+            candidates = {
+                "Google Chrome": [os.path.join(home, '.cache/google-chrome/Default/Cache')],
+                "Microsoft Edge": [os.path.join(home, '.cache/microsoft-edge/Default/Cache')],
+                "Brave Browser": [os.path.join(home, '.cache/BraveSoftware/Brave-Browser/Default/Cache')],
+                "Mozilla Firefox": [os.path.join(home, '.cache/mozilla/firefox')]
+            }
         
         valid = {}
         for browser, paths in candidates.items():
@@ -165,42 +230,72 @@ class BrowserCleaner:
             "freed_mb": round(freed_bytes / (1024 * 1024), 2)
         }
 
-# --- 4. STARTUP MANAGER (AVTO-YUKLANISH TIZIMI) ---
+
+# --- 4. KROSS-PLATFORMA AVTO-YUKLANISH (STARTUP MANAGER) ---
 class StartupManager:
     @staticmethod
     def get_startup_apps():
-        locations = [
-            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", "HKCU"),
-            (winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\Run", "HKLM"),
-        ]
         apps = []
-        for hkey, subkey, loc_name in locations:
-            try:
-                with winreg.OpenKey(hkey, subkey, 0, winreg.KEY_READ) as key:
-                    num_values = winreg.QueryInfoKey(key)[1]
-                    for i in range(num_values):
-                        name, val, _ = winreg.EnumValue(key, i)
+        if CURRENT_OS == 'Windows' and winreg:
+            locations = [
+                (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", "HKCU"),
+                (winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\Run", "HKLM"),
+            ]
+            for hkey, subkey, loc_name in locations:
+                try:
+                    with winreg.OpenKey(hkey, subkey, 0, winreg.KEY_READ) as key:
+                        num_values = winreg.QueryInfoKey(key)[1]
+                        for i in range(num_values):
+                            name, val, _ = winreg.EnumValue(key, i)
+                            apps.append({"name": name, "path": val, "location": loc_name})
+                except Exception:
+                    continue
+        elif CURRENT_OS == 'Linux':
+            autostart_dir = os.path.expanduser('~/.config/autostart')
+            if os.path.exists(autostart_dir):
+                for f in os.listdir(autostart_dir):
+                    if f.endswith('.desktop'):
                         apps.append({
-                            "name": name,
-                            "path": val,
-                            "location": loc_name
+                            "name": f.replace('.desktop', ''),
+                            "path": os.path.join(autostart_dir, f),
+                            "location": "~/.config/autostart"
                         })
-            except Exception:
-                continue
+        elif CURRENT_OS == 'Darwin': # macOS
+            agents_dir = os.path.expanduser('~/Library/LaunchAgents')
+            if os.path.exists(agents_dir):
+                for f in os.listdir(agents_dir):
+                    if f.endswith('.plist'):
+                        apps.append({
+                            "name": f.replace('.plist', ''),
+                            "path": os.path.join(agents_dir, f),
+                            "location": "~/Library/LaunchAgents"
+                        })
         return apps
 
     @staticmethod
     def remove_startup_app(name, location):
-        hkey = winreg.HKEY_CURRENT_USER if location == "HKCU" else winreg.HKEY_LOCAL_MACHINE
-        subkey = r"Software\Microsoft\Windows\CurrentVersion\Run"
-        try:
-            with winreg.OpenKey(hkey, subkey, 0, winreg.KEY_SET_VALUE) as key:
-                winreg.DeleteValue(key, name)
-                return True
-        except Exception:
-            return False
+        if CURRENT_OS == 'Windows' and winreg:
+            hkey = winreg.HKEY_CURRENT_USER if location == "HKCU" else winreg.HKEY_LOCAL_MACHINE
+            subkey = r"Software\Microsoft\Windows\CurrentVersion\Run"
+            try:
+                with winreg.OpenKey(hkey, subkey, 0, winreg.KEY_SET_VALUE) as key:
+                    winreg.DeleteValue(key, name)
+                    return True
+            except Exception:
+                return False
+        elif CURRENT_OS in ['Linux', 'Darwin']:
+            # Linux va Mac da tegishli faylni o'chirish
+            path = location if os.path.isabs(location) else os.path.expanduser(location)
+            if os.path.isfile(path):
+                try:
+                    os.remove(path)
+                    return True
+                except Exception:
+                    return False
+        return False
 
-# --- 5. KATTA FAYLLARNI QIDIRISH (LARGE FILE FINDER) ---
+
+# --- 5. KATTA FAYLLAR VA DUBLIKATLAR ---
 class LargeFilesFinder:
     @staticmethod
     def find_large_files(target_dir, min_size_mb=100, limit=20):
@@ -226,7 +321,7 @@ class LargeFilesFinder:
         large_files.sort(key=lambda x: x["size_mb"], reverse=True)
         return large_files[:limit]
 
-# --- 6. DUBLIKAT FAYLLARNI QIDIRISH ---
+
 class DuplicateFinder:
     @staticmethod
     def get_file_hash(file_path, quick=False):
@@ -286,7 +381,8 @@ class DuplicateFinder:
                                 })
         return duplicates
 
-# --- 7. VIRUS VA SHUBHALI JARAYONLAR ---
+
+# --- 6. SHUBHALI JARAYONLAR (VIRUS SCANNER) ---
 class VirusScanner:
     @staticmethod
     def scan_processes():
@@ -294,7 +390,17 @@ class VirusScanner:
         for proc in psutil.process_iter(['pid', 'name', 'exe', 'username']):
             try:
                 exe = proc.info['exe']
-                if exe and "temp" in exe.lower():
+                if not exe:
+                    continue
+                is_suspicious = False
+                exe_lower = exe.lower()
+                
+                if CURRENT_OS == 'Windows' and "temp" in exe_lower:
+                    is_suspicious = True
+                elif CURRENT_OS in ['Linux', 'Darwin'] and (exe_lower.startswith('/tmp') or exe_lower.startswith('/var/tmp')):
+                    is_suspicious = True
+
+                if is_suspicious:
                     suspicious.append({
                         "pid": proc.info['pid'],
                         "name": proc.info['name'],
@@ -362,30 +468,43 @@ def clean_browser():
 @app.route('/empty-recycle-bin', methods=['POST'])
 def empty_recycle_bin():
     try:
-        subprocess.run(["powershell", "-Command", "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"], capture_output=True, text=True)
-        return jsonify({"status": "success", "message": "Savat (Recycle Bin) tozalandi!"})
+        if CURRENT_OS == 'Windows':
+            subprocess.run(["powershell", "-Command", "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"], capture_output=True, text=True)
+        elif CURRENT_OS == 'Darwin':
+            subprocess.run(["rm", "-rf", os.path.expanduser("~/.Trash/*")], shell=True)
+        else: # Linux
+            trash_path = os.path.expanduser("~/.local/share/Trash/files")
+            if os.path.exists(trash_path):
+                shutil.rmtree(trash_path, ignore_errors=True)
+                os.makedirs(trash_path, exist_ok=True)
+        return jsonify({"status": "success", "message": "Savat (Trash/Recycle Bin) tozalandi!"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/flush-dns', methods=['POST'])
 def flush_dns():
     try:
-        subprocess.run(["ipconfig", "/flushdns"], capture_output=True, text=True)
-        return jsonify({"status": "success", "message": "DNS keshi muvaffaqiyatli tozalandi!"})
+        if CURRENT_OS == 'Windows':
+            subprocess.run(["ipconfig", "/flushdns"], capture_output=True, text=True)
+        elif CURRENT_OS == 'Darwin':
+            subprocess.run(["dscacheutil", "-flushcache"], capture_output=True, text=True)
+        else: # Linux
+            subprocess.run(["resolvectl", "flush-caches"], capture_output=True, text=True)
+        return jsonify({"status": "success", "message": "DNS keshi tozalandi!"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/scan-duplicates', methods=['POST'])
 def scan_dup():
     data = request.get_json() or {}
-    target_dir = data.get('target_dir') or os.path.expanduser(r'~\Downloads')
+    target_dir = data.get('target_dir') or os.path.expanduser(r'~/Downloads')
     dups = DuplicateFinder.find_duplicates(target_dir)
     return jsonify({"status": "success", "duplicates": dups})
 
 @app.route('/scan-large-files', methods=['POST'])
 def scan_large():
     data = request.get_json() or {}
-    target_dir = data.get('target_dir') or os.path.expanduser(r'~\Downloads')
+    target_dir = data.get('target_dir') or os.path.expanduser(r'~/Downloads')
     min_size = int(data.get('min_size_mb', 100))
     files = LargeFilesFinder.find_large_files(target_dir, min_size_mb=min_size)
     return jsonify({"status": "success", "files": files})
@@ -414,7 +533,7 @@ def remove_startup():
     success = StartupManager.remove_startup_app(name, loc)
     if success:
         return jsonify({"status": "success", "message": f"{name} avto-yuklanishdan o'chirildi"})
-    return jsonify({"status": "error", "message": "O'chirib bo'lmadi (Ruxsat yo'q bo'lishi mumkin)"}), 400
+    return jsonify({"status": "error", "message": "O'chirib bo'lmadi"}), 400
 
 @app.route('/kill-process', methods=['POST'])
 def kill_process():
@@ -432,5 +551,17 @@ def kill_process():
 if __name__ == '__main__':
     if not os.path.exists('templates'):
         os.makedirs('templates')
-    print("Veb-server ishga tushmoqda: http://127.0.0.1:5000")
-    app.run(debug=True, port=5000)
+    
+    local_ip = get_local_ip()
+    port = int(os.environ.get('PORT', 5000))
+    
+    print("\n" + "=" * 65)
+    print("🚀 PC Optimizer Pro (Cross-Platform) Muvaffaqiyatli Ishga Tushdi!")
+    print(f"🖥️  Operatsion tizim: {CURRENT_OS} ({platform.release()})")
+    print("-" * 65)
+    print(f"🌐 Ushbu kompyuterda:   http://127.0.0.1:{port}")
+    print(f"📱 Telefon/Boshqa Wi-Fi: http://{local_ip}:{port}")
+    print("=" * 65 + "\n")
+    
+    # 0.0.0.0 barcha tarmoq interfeyslaridan (telefon, boshqa PC) kirish imkonini beradi
+    app.run(host='0.0.0.0', port=port, debug=False)

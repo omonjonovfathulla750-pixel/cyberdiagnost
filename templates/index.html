@@ -40,9 +40,12 @@
             <h1 class="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
               PC Optimizer Pro
             </h1>
-            <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold">v2.0</span>
+            <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold">{{ stats.os }}</span>
           </div>
-          <p class="text-xs text-slate-400">Tezlashtirish, Kesh tozalash, Avto-yuklanish & Xavfsizlik</p>
+          <div class="flex items-center space-x-2 mt-0.5">
+            <span class="text-[11px] text-slate-400">📱 Boshqa qurilmadan (Wi-Fi):</span>
+            <code class="text-[11px] bg-slate-800 text-indigo-300 px-1.5 py-0.2 rounded font-mono select-all">http://{{ stats.local_ip }}:5000</code>
+          </div>
         </div>
       </div>
 

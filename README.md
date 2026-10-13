@@ -1,76 +1,69 @@
-# ⚡ PC Optimizer Pro v2.0
+# ⚡ PC Optimizer Pro (Cross-Platform)
 
-Zamonaviy veb-interfeysga ega Windows tizim diagnostikasi, xotirani tozalash va optimallashtirish dasturi (Python & Flask).
+Barcha qurilmalar (Windows, Linux, macOS, Docker, hamda Wi-Fi orqali Telefon va Planshetlar) uchun mo'ljallangan zamonaviy tizim nazorati va optimallashtirish dasturi.
 
-![Dashboard Preview](https://img.shields.io/badge/Status-Active-brightgreen)
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![Flask](https://img.shields.io/badge/Flask-2.0+-black.svg)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3-38bdf8.svg)
-
----
-
-## 🚀 Asosiy Imkoniyatlar
-
-1. **📊 Jonli Tizim Diagnostikasi (Monitor):**
-   - Real vaqtda CPU chastotasi va foydalanish foizi.
-   - RAM (Tezkor xotira) bandligi (GB va foizda).
-   - Barcha ichki va tashqi drayverlar (SSD/HDD) bo'sh/band holati.
-   - Har 5 soniyada avtomatik jonli yangilanish.
-
-2. **🧹 Chuqur Tozalash (Deep Clean):**
-   - **Tizim vaqtinchalik fayllari:** `%TEMP%` va `C:\Windows\Temp` papkalaridagi axlatlarni tozalash.
-   - **Brauzer keshlarini tozalash:** Google Chrome, Microsoft Edge, Brave va Opera veb-keshlarini o'chirish.
-
-3. **🚀 Avto-yuklanishni boshqarish (Startup Manager):**
-   - Windows ochilganda orqa fonda avtomatik ishga tushuvchi barcha dasturlarni ko'rish.
-   - Keraksiz dasturlarni Windows Registry'dan o'chirish va yuklanish tezligini oshirish.
-
-4. **🔍 Fayl Vositalari:**
-   - **Katta fayllarni aniqlash:** Belgilangan papkadagi eng og'ir (50MB+, 100MB+, 500MB+, 1GB+) fayllarni topish va o'chirish.
-   - **Dublikat fayllarni qidirish:** Downloads papkasidagi bir xil nusxa fayllarni tezkor xeshlash (MD5) orqali aniqlash.
-
-5. **🛡️ Xavfsizlik & Tizim vositalari:**
-   - Vaqtinchalik (`Temp`) papkadan ishlayotgan shubhali jarayonlarni aniqlash va to'xtatish.
-   - Savatni (Recycle Bin) bitta tugma bilan tozalash.
-   - DNS keshini tozalash (`ipconfig /flushdns`).
+![Cross Platform](https://img.shields.io/badge/OS-Windows%20%7C%20Linux%20%7C%20macOS-blue)
+![Devices](https://img.shields.io/badge/Devices-PC%20%7C%20Laptop%20%7C%20Mobile%20%7C%20Tablet-purple)
+![Python](https://img.shields.io/badge/Python-3.8+-brightgreen)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ed)
 
 ---
 
-## 🛠️ O'rnatish va Ishga Tushirish
+## 🌟 Nega "Barcha Qurilmalar"?
 
-### 1. Repozitoriyani yuklab oling:
-```bash
-git clone https://github.com/<USERNAME>/pc-optimizer-pro.git
-cd pc-optimizer-pro
-```
+1. **💻 Cross-Platform Operatsion Tizimlar:**
+   - **Windows:** Temp fayllar, Windows Registry avto-yuklanish dasturlari, Savat (Recycle Bin), DNS kesh.
+   - **Linux:** `/tmp`, `/var/tmp`, `~/.cache`, `~/.config/autostart` tizimi.
+   - **macOS:** `~/Library/Caches`, `/tmp`, LaunchAgents avto-yuklanish, Trash tozalash.
+2. **📱 Telefon va Planshetdan boshqarish:**
+   - Server lokal tarmoqda (`0.0.0.0:5000`) ochiladi.
+   - Bir xil Wi-Fi tarmog'idagi istalgan telefon, iPhone, Android yoki planshetdan kompyuteringiz holatini nazorat qilishingiz mumkin.
+3. **🐳 Docker & Server yordami:**
+   - Istalgan Linux server, VPS yoki konteynerda `docker compose up -d` orqali ishga tushadi.
 
-### 2. Kutubxonalarni o'rnating:
-```bash
-pip install -r requirements.txt
-```
+---
 
-### 3. Serverni ishga tushiring:
-```bash
+## 🚀 Har Qanday Qurilmada Ishga Tushirish
+
+### 🪟 1. Windows:
+`run.bat` faylini ikki marta bosing yoki terminalda:
+```powershell
 python app.py
 ```
 
-Brauzeringizda oching:
-👉 `http://127.0.0.1:5000`
+### 🐧 2. Linux va 🍎 macOS:
+Terminalda:
+```bash
+chmod +x run.sh
+./run.sh
+```
 
-> 💡 **Maslahat:** Tizim fayllarini va Windows Registry parametrlarini xatosiz boshqarish uchun terminalni **"Administrator sifatida"** ishga tushirish tavsiya etiladi.
+### 🐳 3. Docker orqali:
+```bash
+docker compose up -d
+```
+
+### 📱 4. Telefon yoki Planshetdan kirish:
+1. Kompyuteringiz va telefoningiz bir xil Wi-Fi tarmog'iga ulangan bo'lsin.
+2. Dastur terminalda chiqargan manzilni telefon brauzeriga kiriting:
+   👉 `http://<KOMPYUTER_IP>:5000` *(masalan: `http://192.168.1.15:5000`)*
 
 ---
 
-## 📂 Loyiha Tuzilmasi
+## 📂 Loyiha Fayllari
 
 ```
 pc_cleaner/
-├── app.py                # Asosiy Flask backend va diagnostika logikasi
-├── requirements.txt      # Kerakli Python paketlari (flask, psutil)
-├── .gitignore            # Git e'tiborsiz qoldiradigan fayllar
-├── README.md             # Loyiha hujjatlari
+├── app.py                # Kross-platforma backend (Windows, Linux, macOS)
+├── run.bat               # Windows uchun 1-klik ishga tushiruvchi
+├── run.sh                # Linux / macOS uchun 1-klik skripti
+├── Dockerfile            # Docker konteynerlashtirish
+├── docker-compose.yml    # Docker Compose konfiguratsiyasi
+├── requirements.txt      # Python kutubxonalari
+├── .gitignore            # Git istisno fayllari
+├── README.md             # Qo'llanma
 └── templates/
-    └── index.html        # Zamonaviy Tailwind CSS Dark Mode interfeysi
+    └── index.html        # Responsive zamonaviy Dark Mode veb-interfeysi
 ```
 
 ---
