@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Optimizer Pro - Tizim Nazorati & Tozalagich</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+  
+  <!-- Sarlavha / Header -->
+  <header class="border-b border-slate-800 bg-slate-900/70 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+          <i class="fa-solid fa-bolt-lightning text-lg text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              PC Optimizer Pro
+            </h1>
+            <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold">v2.0</span>
+          </div>
+          <p class="text-xs text-slate-400">Tezlashtirish, Kesh tozalash, Avto-yuklanish & Xavfsizlik</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button onclick="emptyRecycleBin()" title="Savatni tozalash" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition border border-slate-700">
+          <i class="fa-solid fa-recycle text-emerald-400"></i>
+          <span class="hidden sm:inline">Savatni Tozalash</span>
+        </button>
+        <button onclick="flushDns()" title="DNS keshini tozalash" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition border border-slate-700">
+          <i class="fa-solid fa-network-wired text-sky-400"></i>
+          <span class="hidden sm:inline">DNS Flush</span>
+        </button>
+        <button onclick="refreshStats()" id="btn-refresh" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition shadow-md shadow-indigo-600/20">
+          <i class="fa-solid fa-rotate-right" id="refresh-icon"></i>
+          <span>Yangilash</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Menyusi -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-800/60 mt-1 flex space-x-1 overflow-x-auto text-xs font-medium">
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn py-2.5 px-4 border-b-2 border-indigo-500 text-indigo-400 font-semibold flex items-center space-x-2">
+        <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+      </button>
+      <button onclick="switchTab('cleaner')" id="tab-cleaner" class="tab-btn py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-broom"></i><span>Chuqur Tozalash</span>
+      </button>
+      <button onclick="switchTab('startup')" id="tab-startup" class="tab-btn py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-rocket"></i><span>Avto-yuklanish (Startup)</span>
+      </button>
+      <button onclick="switchTab('files')" id="tab-files" class="tab-btn py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-folder-tree"></i><span>Katta & Dublikat Fayllar</span>
+      </button>
+      <button onclick="switchTab('security')" id="tab-security" class="tab-btn py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-shield-virus"></i><span>Xavfsizlik</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Asosiy Konteyner -->
+  <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+
+    <!-- ==================== 1. TAB: DASHBOARD ==================== -->
+    <div id="content-dashboard" class="tab-content space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        
+        <!-- CPU Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm font-medium text-slate-400 flex items-center space-x-2">
+              <i class="fa-solid fa-microchip text-indigo-400"></i>
+              <span>Protsessor (CPU)</span>
+            </span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-indigo-300 font-mono" id="cpu-percent">
+              {{ stats.cpu }}%
+            </span>
+          </div>
+          <div class="text-3xl font-bold mb-3 text-white" id="cpu-value">
+            {{ stats.cpu }}<span class="text-lg font-normal text-slate-400">%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+            <div id="cpu-bar" class="bg-gradient-to-r from-indigo-500 to-indigo-400 h-2.5 rounded-full transition-all duration-500" style="width: {{ stats.cpu }}%"></div>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Chastota: <span id="cpu-freq" class="text-slate-300 font-mono">{{ stats.cpu_freq_ghz }} GHz</span></p>
+        </div>
+
+        <!-- RAM Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm font-medium text-slate-400 flex items-center space-x-2">
+              <i class="fa-solid fa-memory text-emerald-400"></i>
+              <span>Tezkor Xotira (RAM)</span>
+            </span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-emerald-300 font-mono" id="ram-percent">
+              {{ stats.ram }}%
+            </span>
+          </div>
+          <div class="text-3xl font-bold mb-3 text-white" id="ram-value">
+            {{ stats.ram }}<span class="text-lg font-normal text-slate-400">%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+            <div id="ram-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2.5 rounded-full transition-all duration-500" style="width: {{ stats.ram }}%"></div>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Band: <span id="ram-details" class="text-slate-300 font-mono">{{ stats.ram_used_gb }} GB / {{ stats.ram_total_gb }} GB</span></p>
+        </div>
+
+        <!-- Disklar Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm font-medium text-slate-400 flex items-center space-x-2">
+              <i class="fa-solid fa-hard-drive text-sky-400"></i>
+              <span>Disklar (SSD / HDD)</span>
+            </span>
+            <span class="text-xs text-slate-400">{{ stats.disks|length }} ta bo'lim</span>
+          </div>
+          <div class="space-y-3" id="disks-container">
+            {% for disk in stats.disks %}
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium text-slate-300">{{ disk.device }} ({{ disk.mountpoint }})</span>
+                <span class="text-slate-400">{{ disk.free }} GB bo'sh ({{ disk.percent }}%)</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2">
+                <div class="h-2 rounded-full {{ 'bg-red-500' if disk.percent > 90 else 'bg-sky-500' }}" style="width: {{ disk.percent }}%"></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tezkor Xulosa Cardlari -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400">Vaqtinchalik Kesh</div>
+            <div class="text-xl font-bold text-amber-400" id="dash-junk">{{ junk_mb }} MB</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <i class="fa-solid fa-broom"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400">Brauzer Keshlari</div>
+            <div class="text-xl font-bold text-sky-400" id="dash-browser">{{ browser_total_mb }} MB</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center">
+            <i class="fa-brands fa-chrome"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400">Avto-yuklanish Dasturlari</div>
+            <div class="text-xl font-bold text-indigo-400">{{ startup_apps|length }} ta</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-rocket"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400">Shubhali Jarayonlar</div>
+            <div class="text-xl font-bold {{ 'text-emerald-400' if suspicious_count == 0 else 'text-rose-400' }}">{{ suspicious_count }} ta</div>
+          </div>
+          <div class="w-10 h-10 rounded-lg {{ 'bg-emerald-500/10 text-emerald-400' if suspicious_count == 0 else 'bg-rose-500/10 text-rose-400' }} flex items-center justify-center">
+            <i class="fa-solid fa-shield-virus"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 2. TAB: CHUQUR TOZALASH ==================== -->
+    <div id="content-cleaner" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Tizim Temp Tozalagich -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
+                  <i class="fa-solid fa-trash-can"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-slate-200">Tizim Temp & Kesh Fayllari</h3>
+                  <p class="text-xs text-slate-400">%TEMP% va C:\Windows\Temp</p>
+                </div>
+              </div>
+              <span class="text-xs px-2.5 py-1 bg-amber-500/20 text-amber-300 rounded-full font-mono" id="clean-junk-badge">
+                {{ junk_mb }} MB
+              </span>
+            </div>
+
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">
+              O'rnatish dasturlari, yangilanishlar va ilovalardan qolgan keraksiz vaqtinchalik fayllarni xavfsiz tozalaydi.
+            </p>
+
+            <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 mb-6 flex justify-around">
+              <div class="text-center">
+                <span class="text-xs text-slate-400 block mb-1">Tozalanadigan hajm</span>
+                <span class="text-2xl font-bold text-amber-400" id="junk-size">{{ junk_mb }} MB</span>
+              </div>
+              <div class="text-center border-l border-slate-800 pl-8">
+                <span class="text-xs text-slate-400 block mb-1">Fayllar soni</span>
+                <span class="text-2xl font-bold text-slate-200" id="junk-count">{{ junk_count }} ta</span>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="cleanJunk()" id="btn-clean" class="w-full inline-flex items-center justify-center space-x-2 py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl shadow-lg shadow-amber-500/20 transition">
+            <i class="fa-solid fa-trash"></i>
+            <span>Temp Fayllarni Tozalash</span>
+          </button>
+        </div>
+
+        <!-- Brauzer Keshlari Tozalagich -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center">
+                  <i class="fa-brands fa-chrome"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-slate-200">Brauzer Keshlari</h3>
+                  <p class="text-xs text-slate-400">Chrome, Edge, Brave, Opera</p>
+                </div>
+              </div>
+              <span class="text-xs px-2.5 py-1 bg-sky-500/20 text-sky-300 rounded-full font-mono" id="clean-browser-badge">
+                {{ browser_total_mb }} MB
+              </span>
+            </div>
+
+            <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+              Veb-sahifalar, rasmlar va video keshlar diskda katta joy egallaydi. Keshni tozalash parollaringiz yoki tarixga ta'sir qilmaydi.
+            </p>
+
+            <div class="space-y-2 mb-6" id="browser-list">
+              {% for b in browser_details %}
+              <div class="flex justify-between items-center text-xs p-2.5 bg-slate-950/60 rounded-lg border border-slate-800">
+                <span class="font-medium text-slate-300">{{ b.browser }}</span>
+                <span class="text-sky-400 font-mono">{{ b.size_mb }} MB <span class="text-slate-500">({{ b.files_count }} fayl)</span></span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <button onclick="cleanBrowser()" id="btn-clean-browser" class="w-full inline-flex items-center justify-center space-x-2 py-3 px-4 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-slate-950 font-bold rounded-xl shadow-lg shadow-sky-500/20 transition">
+            <i class="fa-solid fa-broom"></i>
+            <span>Brauzer Keshlarini Tozalash</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== 3. TAB: STARTUP MANAGER ==================== -->
+    <div id="content-startup" class="tab-content hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <div>
+            <div class="flex items-center space-x-2 mb-1">
+              <div class="w-8 h-8 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center">
+                <i class="fa-solid fa-rocket"></i>
+              </div>
+              <h2 class="text-lg font-semibold text-slate-200">Avto-yuklanish Dasturlari (Startup Manager)</h2>
+            </div>
+            <p class="text-xs text-slate-400">
+              Windows yoqilganda avtomatik ravishda orqa fonda ishga tushuvchi dasturlar. Keraksizlarini o'chirib, kompyuter yuklanishini tezlashtiring.
+            </p>
+          </div>
+          <span class="text-xs px-3 py-1 bg-slate-800 text-indigo-300 rounded-full font-mono border border-slate-700 self-start sm:self-auto">
+            Jami: {{ startup_apps|length }} ta dastur
+          </span>
+        </div>
+
+        <div class="divide-y divide-slate-800/80 border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40" id="startup-container">
+          {% if startup_apps %}
+            {% for app in startup_apps %}
+            <div class="p-3.5 flex items-center justify-between hover:bg-slate-900/60 transition text-xs" id="startup-item-{{ loop.index }}">
+              <div class="truncate max-w-xl pr-4">
+                <div class="flex items-center space-x-2">
+                  <span class="font-semibold text-slate-200">{{ app.name }}</span>
+                  <span class="px-1.5 py-0.5 text-[10px] rounded bg-slate-800 text-slate-400 font-mono">{{ app.location }}</span>
+                </div>
+                <p class="text-slate-500 truncate mt-0.5 font-mono text-[11px]" title="{{ app.path }}">{{ app.path }}</p>
+              </div>
+              <button onclick="removeStartup('{{ app.name }}', '{{ app.location }}', 'startup-item-{{ loop.index }}')" class="px-3 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 transition text-xs font-medium flex items-center space-x-1">
+                <i class="fa-solid fa-ban"></i>
+                <span>O'chirish</span>
+              </button>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="p-8 text-center text-slate-500 text-sm">
+              Avto-yuklanadigan dasturlar topilmadi.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 4. TAB: KATTA & DUBLIKAT FAYLLAR ==================== -->
+    <div id="content-files" class="tab-content hidden space-y-6">
+
+      <!-- Katta fayllar qidiruvchi -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+          <div>
+            <div class="flex items-center space-x-2 mb-1">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                <i class="fa-solid fa-weight-hanging"></i>
+              </div>
+              <h2 class="text-base font-semibold text-slate-200">Katta Hajmli Fayllarni Aniqlash</h2>
+            </div>
+            <p class="text-xs text-slate-400">Diskda eng ko'p joy egallayotgan katta fayllarni qidiradi (Standart: Downloads papkasi).</p>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <select id="large-file-min-size" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2">
+              <option value="50">> 50 MB</option>
+              <option value="100" selected>> 100 MB</option>
+              <option value="500">> 500 MB</option>
+              <option value="1024">> 1 GB</option>
+            </select>
+            <button onclick="scanLargeFiles()" id="btn-scan-large" class="inline-flex items-center space-x-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-emerald-600/20 transition">
+              <i class="fa-solid fa-magnifying-glass" id="large-search-icon"></i>
+              <span>Katta Fayllarni Qidirish</span>
+            </button>
+            <button onclick="deleteSelectedLargeFiles()" id="btn-delete-large" class="hidden inline-flex items-center space-x-1.5 px-3 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold transition">
+              <i class="fa-solid fa-trash"></i>
+              <span>Tanlanganlarni O'chirish</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="large-files-container" class="border border-slate-800 rounded-xl bg-slate-950/60 p-4">
+          <div class="text-center py-6 text-slate-500 text-xs" id="large-files-placeholder">
+            Qidiruv tugmasini bosing.
+          </div>
+          <div id="large-files-list" class="space-y-2 hidden"></div>
+        </div>
+      </div>
+
+      <!-- Dublikatlar qidiruvchi -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+          <div>
+            <div class="flex items-center space-x-2 mb-1">
+              <div class="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center">
+                <i class="fa-solid fa-clone"></i>
+              </div>
+              <h2 class="text-base font-semibold text-slate-200">Dublikat (Nusxa) Fayllarni Qidirish</h2>
+            </div>
+            <p class="text-xs text-slate-400">Downloads papkasidagi mutlaqo bir xil kontentga ega nusxa fayllarni topadi.</p>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button onclick="scanDuplicates()" id="btn-scan-dup" class="inline-flex items-center space-x-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-600/20 transition">
+              <i class="fa-solid fa-magnifying-glass" id="dup-search-icon"></i>
+              <span>Dublikatlarni Qidirish</span>
+            </button>
+            <button onclick="deleteSelectedDuplicates()" id="btn-delete-dup" class="hidden inline-flex items-center space-x-1.5 px-3 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold transition">
+              <i class="fa-solid fa-trash"></i>
+              <span>Nusxalarni O'chirish</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="duplicates-container" class="border border-slate-800 rounded-xl bg-slate-950/60 p-4">
+          <div class="text-center py-6 text-slate-500 text-xs" id="duplicates-placeholder">
+            Dublikatlarni qidirish tugmasini bosing.
+          </div>
+          <div id="duplicates-list" class="space-y-3 hidden"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== 5. TAB: XAVFSIZLIK ==================== -->
+    <div id="content-security" class="tab-content hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center">
+              <i class="fa-solid fa-shield-virus"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-slate-200">Shubhali Temp Jarayonlari</h2>
+              <p class="text-xs text-slate-400">Temp papkalaridan yashirin ishga tushgan fon dasturlarini skanerlash</p>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-xs font-medium {{ 'bg-emerald-500/15 text-emerald-300' if suspicious_count == 0 else 'bg-rose-500/15 text-rose-300' }}" id="suspicious-badge">
+            {{ 'Tizim Xavfsiz' if suspicious_count == 0 else suspicious_count ~ ' ta shubhali' }}
+          </span>
+        </div>
+
+        <div class="border border-slate-800 rounded-xl bg-slate-950/60 p-4 space-y-2" id="suspicious-list">
+          {% if suspicious_procs %}
+            {% for p in suspicious_procs %}
+            <div class="flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+              <div class="truncate max-w-lg">
+                <div class="font-semibold text-rose-300">{{ p.name }} <span class="text-slate-400 font-mono">(PID: {{ p.pid }})</span></div>
+                <div class="text-slate-400 truncate mt-0.5 font-mono text-[11px]" title="{{ p.exe }}">{{ p.exe }}</div>
+              </div>
+              <button onclick="killProcess({{ p.pid }})" class="px-3 py-1.5 bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white rounded-lg border border-rose-500/40 transition">
+                To'xtatish (Kill)
+              </button>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-10 text-slate-500 text-sm">
+              <i class="fa-solid fa-circle-check text-emerald-400 text-3xl mb-2 block"></i>
+              Hech qanday shubhali jarayon topilmadi. Tizimingiz toza!
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bildirishnoma (Toast Alert) -->
+  <div id="toast" class="fixed bottom-6 right-6 hidden transform transition-all duration-300 max-w-md bg-slate-900 border border-indigo-500/50 text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 z-50">
+    <div id="toast-icon"></div>
+    <div id="toast-message" class="text-xs font-medium"></div>
+  </div>
+
+  <script>
+    // Tab almashtirish
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-indigo-500', 'text-indigo-400', 'font-semibold');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      const activeContent = document.getElementById(`content-${tabName}`);
+
+      if (activeBtn && activeContent) {
+        activeBtn.classList.add('border-indigo-500', 'text-indigo-400', 'font-semibold');
+        activeBtn.classList.remove('border-transparent', 'text-slate-400');
+        activeContent.classList.remove('hidden');
+      }
+    }
+
+    // Toast
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toast-message');
+      const icon = document.getElementById('toast-icon');
+
+      msg.innerText = message;
+      if (type === 'success') {
+        icon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>';
+      } else if (type === 'error') {
+        icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-rose-400 text-base"></i>';
+      } else {
+        icon.innerHTML = '<i class="fa-solid fa-info-circle text-sky-400 text-base"></i>';
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+
+    // Statistikani yangilash
+    async function refreshStats() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('fa-spin');
+
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+
+        // CPU & RAM
+        document.getElementById('cpu-percent').innerText = `${data.stats.cpu}%`;
+        document.getElementById('cpu-value').innerHTML = `${data.stats.cpu}<span class="text-lg font-normal text-slate-400">%</span>`;
+        document.getElementById('cpu-bar').style.width = `${data.stats.cpu}%`;
+        document.getElementById('cpu-freq').innerText = `${data.stats.cpu_freq_ghz} GHz`;
+
+        document.getElementById('ram-percent').innerText = `${data.stats.ram}%`;
+        document.getElementById('ram-value').innerHTML = `${data.stats.ram}<span class="text-lg font-normal text-slate-400">%</span>`;
+        document.getElementById('ram-bar').style.width = `${data.stats.ram}%`;
+        document.getElementById('ram-details').innerText = `${data.stats.ram_used_gb} GB / ${data.stats.ram_total_gb} GB`;
+
+        // Disklar
+        const diskContainer = document.getElementById('disks-container');
+        diskContainer.innerHTML = '';
+        data.stats.disks.forEach(d => {
+          const colorClass = d.percent > 90 ? 'bg-red-500' : 'bg-sky-500';
+          diskContainer.innerHTML += `
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium text-slate-300">${d.device} (${d.mountpoint})</span>
+                <span class="text-slate-400">${d.free} GB bo'sh (${d.percent}%)</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2">
+                <div class="h-2 rounded-full ${colorClass}" style="width: ${d.percent}%"></div>
+              </div>
+            </div>
+          `;
+        });
+
+        // Keshlar
+        document.getElementById('dash-junk').innerText = `${data.junk_mb} MB`;
+        document.getElementById('dash-browser').innerText = `${data.browser_total_mb} MB`;
+        document.getElementById('junk-size').innerText = `${data.junk_mb} MB`;
+        document.getElementById('junk-count').innerText = `${data.junk_count} ta`;
+        document.getElementById('clean-junk-badge').innerText = `${data.junk_mb} MB`;
+        document.getElementById('clean-browser-badge').innerText = `${data.browser_total_mb} MB`;
+
+      } catch (err) {
+        showToast("Statistikani yangilashda xatolik", "error");
+      } finally {
+        icon.classList.remove('fa-spin');
+      }
+    }
+
+    // Temp tozalash
+    async function cleanJunk() {
+      const btn = document.getElementById('btn-clean');
+      const orig = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Tozalanmoqda...</span>';
+      try {
+        const res = await fetch('/clean', { method: 'POST' });
+        const d = await res.json();
+        showToast(`${d.deleted} ta fayl o'chirildi (${d.freed_mb} MB bo'shatildi)`, 'success');
+        refreshStats();
+      } catch (e) {
+        showToast("Xatolik yuz berdi", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    }
+
+    // Brauzer keshlarini tozalash
+    async function cleanBrowser() {
+      const btn = document.getElementById('btn-clean-browser');
+      const orig = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Tozalanmoqda...</span>';
+      try {
+        const res = await fetch('/clean-browser', { method: 'POST' });
+        const d = await res.json();
+        showToast(`Brauzerlardan ${d.deleted} ta kesh fayl o'chirildi (${d.freed_mb} MB)`, 'success');
+        refreshStats();
+      } catch (e) {
+        showToast("Brauzer keshini tozalashda xatolik", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    }
+
+    // Savatni tozalash
+    async function emptyRecycleBin() {
+      if (!confirm("Savatdagi barcha fayllarni qaytarib bo'lmas qilib o'chirmoqchimisiz?")) return;
+      try {
+        const res = await fetch('/empty-recycle-bin', { method: 'POST' });
+        const d = await res.json();
+        showToast(d.message, 'success');
+      } catch (e) {
+        showToast("Savatni tozalab bo'lmadi", 'error');
+      }
+    }
+
+    // DNS Flush
+    async function flushDns() {
+      try {
+        const res = await fetch('/flush-dns', { method: 'POST' });
+        const d = await res.json();
+        showToast(d.message, 'success');
+      } catch (e) {
+        showToast("DNS keshini tozalab bo'lmadi", 'error');
+      }
+    }
+
+    // Avto-yuklanishdan o'chirish
+    async function removeStartup(name, location, elemId) {
+      if (!confirm(`"${name}" dasturini avto-yuklanishdan o'chirmoqchimisiz?`)) return;
+      try {
+        const res = await fetch('/startup/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, location })
+        });
+        const d = await res.json();
+        if (d.status === 'success') {
+          showToast(d.message, 'success');
+          const el = document.getElementById(elemId);
+          if (el) el.remove();
+        } else {
+          showToast(d.message, 'error');
+        }
+      } catch (e) {
+        showToast("Dasturni o'chirib bo'lmadi", 'error');
+      }
+    }
+
+    // Katta fayllarni skanerlash
+    async function scanLargeFiles() {
+      const btn = document.getElementById('btn-scan-large');
+      const icon = document.getElementById('large-search-icon');
+      const placeholder = document.getElementById('large-files-placeholder');
+      const list = document.getElementById('large-files-list');
+      const deleteBtn = document.getElementById('btn-delete-large');
+      const minSize = document.getElementById('large-file-min-size').value;
+
+      btn.disabled = true;
+      icon.className = 'fa-solid fa-spinner fa-spin';
+      placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl text-emerald-400 mb-2 block"></i>Fayllar qidirilmoqda...';
+      placeholder.classList.remove('hidden');
+      list.classList.add('hidden');
+      deleteBtn.classList.add('hidden');
+
+      try {
+        const res = await fetch('/scan-large-files', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ min_size_mb: minSize })
+        });
+        const data = await res.json();
+
+        if (data.files.length === 0) {
+          placeholder.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400 text-xl mb-2 block"></i>Katta hajmli fayllar topilmadi!';
+        } else {
+          placeholder.classList.add('hidden');
+          list.classList.remove('hidden');
+          deleteBtn.classList.remove('hidden');
+          list.innerHTML = '';
+
+          data.files.forEach(f => {
+            list.innerHTML += `
+              <label class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800/60 cursor-pointer text-xs">
+                <div class="flex items-center space-x-2 truncate pr-4">
+                  <input type="checkbox" name="large-file" value="${f.path.replace(/"/g, '&quot;')}" class="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500">
+                  <div class="truncate">
+                    <span class="font-medium text-slate-200">${f.name}</span>
+                    <p class="text-slate-500 font-mono text-[11px] truncate">${f.path}</p>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-semibold whitespace-nowrap">
+                  ${f.size_mb} MB
+                </span>
+              </label>
+            `;
+          });
+        }
+      } catch (e) {
+        showToast("Qidiruvda xatolik yuz berdi", "error");
+      } finally {
+        btn.disabled = false;
+        icon.className = 'fa-solid fa-magnifying-glass';
+      }
+    }
+
+    // Tanlangan katta fayllarni o'chirish
+    async function deleteSelectedLargeFiles() {
+      const checked = document.querySelectorAll('input[name="large-file"]:checked');
+      const paths = Array.from(checked).map(c => c.value);
+      if (paths.length === 0) return showToast("Hech qanday fayl tanlanmagan", "info");
+
+      if (!confirm(`Haqiqatan ham tanlangan ${paths.length} ta katta faylni butunlay o'chirmoqchimisiz?`)) return;
+
+      try {
+        const res = await fetch('/delete-files', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paths })
+        });
+        const d = await res.json();
+        showToast(`${d.deleted} ta fayl muvaffaqiyatli o'chirildi!`, "success");
+        scanLargeFiles();
+        refreshStats();
+      } catch (e) {
+        showToast("O'chirishda xatolik", "error");
+      }
+    }
+
+    // Dublikatlarni skanerlash
+    async function scanDuplicates() {
+      const btn = document.getElementById('btn-scan-dup');
+      const icon = document.getElementById('dup-search-icon');
+      const placeholder = document.getElementById('duplicates-placeholder');
+      const list = document.getElementById('duplicates-list');
+      const deleteBtn = document.getElementById('btn-delete-dup');
+
+      btn.disabled = true;
+      icon.className = 'fa-solid fa-spinner fa-spin';
+      placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl text-indigo-400 mb-2 block"></i>Downloads papkasi skanerlanmoqda...';
+      placeholder.classList.remove('hidden');
+      list.classList.add('hidden');
+      deleteBtn.classList.add('hidden');
+
+      try {
+        const res = await fetch('/scan-duplicates', { method: 'POST' });
+        const data = await res.json();
+
+        if (data.duplicates.length === 0) {
+          placeholder.innerHTML = '<i class="fa-solid fa-check text-emerald-400 text-xl mb-2 block"></i>Dublikat fayllar topilmadi!';
+        } else {
+          placeholder.classList.add('hidden');
+          list.classList.remove('hidden');
+          deleteBtn.classList.remove('hidden');
+          list.innerHTML = '';
+
+          data.duplicates.forEach(group => {
+            let dupsHtml = '';
+            group.duplicates.forEach(dupPath => {
+              const fileName = dupPath.split('\\').pop().split('/').pop();
+              dupsHtml += `
+                <label class="flex items-start space-x-2 p-2 rounded bg-slate-900 hover:bg-slate-800/80 cursor-pointer text-xs">
+                  <input type="checkbox" name="dup-file" value="${dupPath.replace(/"/g, '&quot;')}" checked class="mt-0.5 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                  <div class="truncate">
+                    <span class="font-medium text-rose-300">[Nusxa] ${fileName}</span>
+                    <p class="text-slate-500 text-[11px] truncate">${dupPath}</p>
+                  </div>
+                </label>
+              `;
+            });
+
+            const origName = group.original.split('\\').pop().split('/').pop();
+
+            list.innerHTML += `
+              <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
+                  <div class="truncate max-w-lg">
+                    <span class="text-slate-400">Asl fayl:</span> 
+                    <span class="font-semibold text-emerald-400">${origName}</span>
+                    <span class="text-slate-500 ml-1">(${group.size_mb} MB)</span>
+                  </div>
+                  <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${group.duplicates.length} ta nusxa</span>
+                </div>
+                <div class="space-y-1">${dupsHtml}</div>
+              </div>
+            `;
+          });
+        }
+      } catch (e) {
+        showToast("Skanerlashda xatolik yuz berdi", "error");
+      } finally {
+        btn.disabled = false;
+        icon.className = 'fa-solid fa-magnifying-glass';
+      }
+    }
+
+    // Tanlangan dublikatlarni o'chirish
+    async function deleteSelectedDuplicates() {
+      const checked = document.querySelectorAll('input[name="dup-file"]:checked');
+      const paths = Array.from(checked).map(c => c.value);
+      if (paths.length === 0) return showToast("Hech qanday nusxa tanlanmagan", "info");
+
+      if (!confirm(`Haqiqatan ham tanlangan ${paths.length} ta dublikat faylni o'chirmoqchimisiz?`)) return;
+
+      try {
+        const res = await fetch('/delete-files', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paths })
+        });
+        const d = await res.json();
+        showToast(`${d.deleted} ta dublikat fayl o'chirildi!`, "success");
+        scanDuplicates();
+      } catch (e) {
+        showToast("O'chirishda xatolik", "error");
+      }
+    }
+
+    // Jarayonni to'xtatish
+    async function killProcess(pid) {
+      if (!confirm(`PID ${pid} jarayonini to'xtatmoqchimisiz?`)) return;
+      try {
+        const res = await fetch('/kill-process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pid })
+        });
+        const d = await res.json();
+        if (d.status === 'success') {
+          showToast(d.message, 'success');
+          refreshStats();
+        } else {
+          showToast(d.message, 'error');
+        }
+      } catch (e) {
+        showToast("Jarayonni to'xtatib bo'lmadi", 'error');
+      }
+    }
+
+    // Dastlabki avtomatik yangilash (har 5 soniyada yangilab turish)
+    setInterval(() => {
+      // Faqat dashboard ochiq bo'lsa yangilasin
+      if (!document.getElementById('content-dashboard').classList.contains('hidden')) {
+        fetch('/api/stats')
+          .then(r => r.json())
+          .then(data => {
+            document.getElementById('cpu-percent').innerText = `${data.stats.cpu}%`;
+            document.getElementById('cpu-value').innerHTML = `${data.stats.cpu}<span class="text-lg font-normal text-slate-400">%</span>`;
+            document.getElementById('cpu-bar').style.width = `${data.stats.cpu}%`;
+            document.getElementById('ram-percent').innerText = `${data.stats.ram}%`;
+            document.getElementById('ram-value').innerHTML = `${data.stats.ram}<span class="text-lg font-normal text-slate-400">%</span>`;
+            document.getElementById('ram-bar').style.width = `${data.stats.ram}%`;
+          })
+          .catch(() => {});
+      }
+    }, 5000);
+  </script>
+</body>
+</html>
