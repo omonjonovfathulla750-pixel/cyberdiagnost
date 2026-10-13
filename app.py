@@ -518,10 +518,21 @@ def scan_dup():
 @app.route('/scan-large-files', methods=['POST'])
 def scan_large():
     data = request.get_json(silent=True) or {}
-    target_dir = data.get('target_dir') or os.path.expanduser(r'~/Downloads')
+    folder_choice = data.get('target_dir', 'Downloads')
+    home = os.path.expanduser('~')
+    shortcuts = {
+        'Downloads': os.path.join(home, 'Downloads'),
+        'Documents': os.path.join(home, 'Documents'),
+        'Pictures': os.path.join(home, 'Pictures'),
+        'Desktop': os.path.join(home, 'Desktop'),
+    }
+    target_dir = shortcuts.get(folder_choice, folder_choice)
+    if not os.path.isabs(target_dir):
+        target_dir = os.path.join(home, target_dir)
+        
     min_size = int(data.get('min_size_mb', 100))
     files = LargeFilesFinder.find_large_files(target_dir, min_size_mb=min_size)
-    return jsonify({"status": "success", "files": files})
+    return jsonify({"status": "success", "files": files, "scanned_dir": target_dir})
 
 @app.route('/delete-files', methods=['POST'])
 def delete_files():
