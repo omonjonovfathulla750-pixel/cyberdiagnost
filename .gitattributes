@@ -1,0 +1,10 @@
+# GitHub Linguist tili konfiguratsiyasi
+# Repozitoriy tilini Python deb ko'rsatish uchun HTML va skriptlarni statistikadan chiqarish:
+*.html linguist-detectable=false
+*.html linguist-vendored=true
+templates/** linguist-vendored=true
+templates/** linguist-detectable=false
+*.bat linguist-detectable=false
+*.sh linguist-detectable=false
+*.yml linguist-detectable=false
+Dockerfile linguist-detectable=false
