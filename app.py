@@ -556,11 +556,11 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     
     print("\n" + "=" * 65)
-    print("🚀 PC Optimizer Pro (Cross-Platform) Muvaffaqiyatli Ishga Tushdi!")
-    print(f"🖥️  Operatsion tizim: {CURRENT_OS} ({platform.release()})")
+    print(">> PC Optimizer Pro (Cross-Platform) Muvaffaqiyatli Ishga Tushdi!")
+    print(f">> Operatsion tizim: {CURRENT_OS} ({platform.release()})")
     print("-" * 65)
-    print(f"🌐 Ushbu kompyuterda:   http://127.0.0.1:{port}")
-    print(f"📱 Telefon/Boshqa Wi-Fi: http://{local_ip}:{port}")
+    print(f">> Ushbu kompyuterda:   http://127.0.0.1:{port}")
+    print(f">> Telefon/Boshqa Wi-Fi: http://{local_ip}:{port}")
     print("=" * 65 + "\n")
     
     # 0.0.0.0 barcha tarmoq interfeyslaridan (telefon, boshqa PC) kirish imkonini beradi
