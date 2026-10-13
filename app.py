@@ -496,14 +496,14 @@ def flush_dns():
 
 @app.route('/scan-duplicates', methods=['POST'])
 def scan_dup():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     target_dir = data.get('target_dir') or os.path.expanduser(r'~/Downloads')
     dups = DuplicateFinder.find_duplicates(target_dir)
     return jsonify({"status": "success", "duplicates": dups})
 
 @app.route('/scan-large-files', methods=['POST'])
 def scan_large():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     target_dir = data.get('target_dir') or os.path.expanduser(r'~/Downloads')
     min_size = int(data.get('min_size_mb', 100))
     files = LargeFilesFinder.find_large_files(target_dir, min_size_mb=min_size)
@@ -511,7 +511,7 @@ def scan_large():
 
 @app.route('/delete-files', methods=['POST'])
 def delete_files():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     paths = data.get('paths', [])
     deleted = 0
     for p in paths:
@@ -525,7 +525,7 @@ def delete_files():
 
 @app.route('/startup/remove', methods=['POST'])
 def remove_startup():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     name = data.get('name')
     loc = data.get('location')
     if not name or not loc:
@@ -537,7 +537,7 @@ def remove_startup():
 
 @app.route('/kill-process', methods=['POST'])
 def kill_process():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     pid = data.get('pid')
     if not pid:
         return jsonify({"status": "error", "message": "PID ko'rsatilmadi"}), 400

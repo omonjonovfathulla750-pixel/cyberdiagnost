@@ -731,7 +731,14 @@
       deleteBtn.classList.add('hidden');
 
       try {
-        const res = await fetch('/scan-duplicates', { method: 'POST' });
+        const res = await fetch('/scan-duplicates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        if (!res.ok) {
+          throw new Error('Server xatosi: ' + res.status);
+        }
         const data = await res.json();
 
         if (data.duplicates.length === 0) {
